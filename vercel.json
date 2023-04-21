@@ -2,12 +2,13 @@
   "version": 2,
   "framework": "node",
   "name": "socketing",
-  "builds": [
-    {
-      "src": "./index.js",
-      "use": "@vercel/node"
+
+  "build": {
+    "env": {
+      "NODE_ENV": "production",
+      "ANOTHER_ENV_VARIABLE": "value"
     }
-  ],
+  },
   "routes": [
     {
       "src": "/(.*)",
