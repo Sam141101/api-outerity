@@ -1,6 +1,7 @@
 // const middlewareController = require("../controllers/MiddlewareController");
-const userController = require("../controllers/UserController");
+// const userController = require("../controllers/UserController");
 const middlewareController = require("../controllers/middlewareController");
+const userController = require("../controllers/userController");
 
 const router = require("express").Router();
 

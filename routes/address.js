@@ -1,4 +1,4 @@
-const middlewareController = require("../controllers/MiddlewareController");
+const middlewareController = require("../controllers/middlewareController");
 const addressController = require("../controllers/addressController");
 const shippingController = require("../controllers/shippingController");
 // const productController = require("../controllers/productController");

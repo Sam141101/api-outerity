@@ -1,14 +1,5 @@
 const router = require("express").Router();
-const User = require("../models/User");
-const CryptoJS = require("crypto-js");
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs");
-const { verifyTokenAndAuthorization, verifyToken } = require("./verifyToken");
-const Cart = require("../models/Cart");
-const ListProduct = require("../models/ListProduct");
-const Token = require("../models/Token");
-const sendEmail = require("../utils/sendEmail");
-const crypto = require("crypto");
+
 const authController = require("../controllers/authController");
 // const middlewareController = require("../controllers/MiddlewareController");
 const middlewareController = require("../controllers/middlewareController");
