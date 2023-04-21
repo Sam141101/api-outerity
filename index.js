@@ -56,26 +56,26 @@ app.use(cors(corsOptions));
 app.use(cookieParser());
 // app.use(cors());
 app.use(express.json());
-// app.use("/api/auth", authRoute);
-// app.use("/api/users", userRoute);
-// app.use("/api/products", productRoute);
-// app.use("/api/carts", cartRoute);
-// app.use("/api/orders", orderRoute);
-// app.use("/api/checkout", stripeRoute);
-// app.use("/api/search", searchRoute);
-// app.use("/api/products/pagination", paginationRoute);
-// app.use("/api/comments", commentRoute);
-// app.use("/api/discounts", discountRoute);
-// // receive
-// app.use("/api/receive", receiveRoute);
+app.use("/api/auth", authRoute);
+app.use("/api/users", userRoute);
+app.use("/api/products", productRoute);
+app.use("/api/carts", cartRoute);
+app.use("/api/orders", orderRoute);
+app.use("/api/checkout", stripeRoute);
+app.use("/api/search", searchRoute);
+app.use("/api/products/pagination", paginationRoute);
+app.use("/api/comments", commentRoute);
+app.use("/api/discounts", discountRoute);
+// receive
+app.use("/api/receive", receiveRoute);
 
-// // paypal
-// app.use("/api/paypal", paypalRoute);
+// paypal
+app.use("/api/paypal", paypalRoute);
 
-// // giao hàng nhanh
-// app.use("/api/shippings", shippingRoute);
+// giao hàng nhanh
+app.use("/api/shippings", shippingRoute);
 
-// app.use("/api/address", addressRoute);
+app.use("/api/address", addressRoute);
 
 app.get("/", (req, res) => {
   res.send("This server is Connected");
