@@ -26,6 +26,14 @@ const paypalController = {
   // thanh toán online
   payment: async (req, res) => {
     try {
+      if (
+        !req.body.inputs.fullname ||
+        !req.body.inputs.phone ||
+        !req.body.inputs.service_id
+      ) {
+        res.json("Vui lòng điền đầy đủ thông tin!");
+      }
+
       let voucher;
       let totalPriceOrder = req.body.totalPrice;
 
@@ -81,13 +89,25 @@ const paypalController = {
         cancelAt: null,
       });
 
+      let phoneNumber = req.body.inputs.phone;
+      const phoneRegex = /^0\d{9}$/;
+      if (phoneRegex.test(phoneNumber)) {
+        console.log("Số điện thoại hợp lệ");
+        if (phoneNumber.startsWith("0")) {
+          phoneNumber = "84" + phoneNumber.substring(1);
+        }
+      } else {
+        console.log("Số điện thoại không hợp lệ");
+        res.status(200).json("Số điện thoại không hợp lệ!");
+      }
+
       await User.updateOne(
         { _id: req.body.userId },
         {
           $set: {
             fullname: req.body.inputs.fullname,
-            // address: req.body.inputs.address,
-            phone: req.body.inputs.phone,
+            // phone: req.body.inputs.phone,
+            phone: phoneNumber,
           },
         }
       );
