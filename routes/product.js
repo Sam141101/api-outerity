@@ -31,6 +31,7 @@ const PAGE_SIZE = 12;
 
 //GET ALL PRODUCTS
 router.get("/", productController.getAllProduct);
+router.get("/list-product", productController.getAllProductList);
 
 module.exports = router;
 

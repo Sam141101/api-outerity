@@ -52,7 +52,140 @@ const productController = {
   },
 
   //  Lấy ra tất cả sản phẩm
+  // getAllProduct: async (req, res) => {
+  //   let page = req.query.page;
+  //   const pageSize = parseInt(req.query.limit);
+  //   page = parseInt(page);
+  //   if (page < 1) {
+  //     page = 1;
+  //   }
+  //   let quanti = (page - 1) * pageSize;
+
+  //   const qNew = req.query.new;
+  //   const qCategory = req.query.category;
+  //   try {
+  //     let products;
+
+  //     if (qNew) {
+  //       products = await Product.find().sort({ createdAt: -1 }).limit(1);
+  //     } else if (qCategory) {
+  //       products = await Product.find({
+  //         categories: {
+  //           $in: [qCategory],
+  //         },
+  //       })
+  //         // .sort({ createdAt: -1 })
+  //         .skip(quanti)
+  //         .limit(pageSize);
+  //     } else {
+  //       products = await Product.find();
+  //     }
+
+  //     const total = await Product.find({
+  //       categories: {
+  //         $in: [qCategory],
+  //       },
+  //     });
+
+  //     const totalProduct = total.length;
+
+  //     const pagi = {
+  //       page: page,
+  //       totalRows: totalProduct,
+  //       limit: pageSize,
+  //     };
+
+  //     const results = {
+  //       resultProducts: products,
+  //       pagi: pagi,
+  //     };
+
+  //     res.status(200).json(results);
+  //   } catch (err) {
+  //     res.status(500).json(err);
+  //   }
+  // },
+
   getAllProduct: async (req, res) => {
+    // Xử lí số trang hiện tại
+    console.log("req", req.query);
+    let page = req.query.page;
+    const pageSize = parseInt(req.query.limit);
+    page = parseInt(page);
+    if (page < 1) {
+      page = 1;
+    }
+    let quanti = (page - 1) * pageSize;
+
+    // const qNew = req.query.new;
+    // const qCategory = req.query.category;
+
+    // Xử lí sort
+    let sort;
+    if (req.query.sort === "newest") {
+      sort = {
+        createdAt: -1,
+      };
+    } else if (req.query.sort === "asc") {
+      sort = {
+        price: -1,
+      };
+    } else if (req.query.sort === "desc") {
+      sort = {
+        price: 1,
+      };
+    }
+
+    try {
+      let products;
+      let totalProduct;
+
+      if (req.query.new) {
+        products = await Product.find().sort({ createdAt: -1 }).limit(1);
+      } else if (req.query.category !== "undefined") {
+        products = await Product.find({
+          categories: {
+            $in: [req.query.category],
+          },
+        })
+          .sort(sort)
+          .skip(quanti)
+          .limit(pageSize)
+          .lean();
+
+        totalProduct = await Product.find({
+          categories: {
+            $in: [req.query.category],
+          },
+        }).lean();
+      } else {
+        products = await Product.find()
+          .sort(sort)
+          .skip(quanti)
+          .limit(pageSize)
+          .lean();
+
+        totalProduct = await Product.find().lean();
+      }
+
+      const pagi = {
+        page: page,
+        totalRows: totalProduct.length,
+        limit: pageSize,
+      };
+
+      const results = {
+        resultProducts: products,
+        pagi: pagi,
+      };
+
+      res.status(200).json(results);
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  },
+
+  getAllProductList: async (req, res) => {
     let page = req.query.page;
     const pageSize = parseInt(req.query.limit);
     page = parseInt(page);
@@ -67,40 +200,20 @@ const productController = {
       let products;
 
       if (qNew) {
-        products = await Product.find().sort({ createdAt: -1 }).limit(1);
+        products = await Product.find().sort({ createdAt: -1 }).limit(1).lean();
       } else if (qCategory) {
         products = await Product.find({
           categories: {
             $in: [qCategory],
           },
         })
-          // .sort({ createdAt: -1 })
-          .skip(quanti)
-          .limit(pageSize);
+          .sort({ createdAt: -1 })
+          .lean();
       } else {
-        products = await Product.find();
+        products = await Product.find().sort({ createdAt: -1 }).lean();
       }
 
-      const total = await Product.find({
-        categories: {
-          $in: [qCategory],
-        },
-      });
-
-      const totalProduct = total.length;
-
-      const pagi = {
-        page: page,
-        totalRows: totalProduct,
-        limit: pageSize,
-      };
-
-      const results = {
-        resultProducts: products,
-        pagi: pagi,
-      };
-
-      res.status(200).json(results);
+      res.status(200).json(products);
     } catch (err) {
       res.status(500).json(err);
     }
