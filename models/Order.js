@@ -21,12 +21,15 @@ const OrderSchema = new mongoose.Schema(
           required: true,
         },
 
+        discount: { type: Number, default: 0 },
         checkEvaluate: { type: Boolean, default: false },
       },
     ],
     amount: { type: Number, required: true },
     method: { type: String },
-    coupon: { type: String },
+    descCoupon: { type: String },
+    amountCoupon: { type: Number },
+
     status: { type: String, default: "pending" },
     expireAt: { type: Date, default: undefined, index: { expires: "0s" } }, // thêm field expireAt
     cancelAt: { type: Date },

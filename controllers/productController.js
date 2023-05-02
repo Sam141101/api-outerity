@@ -1,5 +1,8 @@
 const User = require("../models/User");
 const Product = require("../models/Product");
+const mongoose = require("mongoose");
+const Size = require("../models/Size");
+const DiscountProduct = require("../models/DiscountProduct");
 
 const PAGE_SIZE = 12;
 
@@ -44,7 +47,53 @@ const productController = {
   // Lấy ra 1 sản phẩm theo id
   getOneProduct: async (req, res) => {
     try {
-      const product = await Product.findById(req.params.id).lean();
+      // const product = await Product.findById(req.params.id).populate({
+      //   path: "discountProduct_id",
+      // })
+
+      // .select("title img price discountProduct_id inStock");
+
+      const product = await Product.findById(req.params.id)
+        .populate("discountProduct_id", "discount_amount")
+        .populate("sizes", "size inStock")
+        .select("title img categories color price discountProduct_id sizes");
+      console.log(product);
+      res.status(200).json(product);
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  },
+
+  // test model size
+  createSize: async (req, res) => {
+    try {
+      const size = new Size({
+        size: req.body.size,
+        inStock: req.body.inStock,
+      });
+
+      await size.save();
+      res.status(200).json(size);
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  },
+
+  // test model size
+  addSize: async (req, res) => {
+    try {
+      const product = await Product.updateOne(
+        {
+          _id: req.params.id,
+        },
+        {
+          $push: { sizes: req.body.size_id },
+          $set: { discountProduct_id: req.body.discount },
+        },
+        { new: true }
+      );
+
+      // await discount_amount.save();
       res.status(200).json(product);
     } catch (err) {
       res.status(500).json(err);
@@ -117,9 +166,6 @@ const productController = {
     }
     let quanti = (page - 1) * pageSize;
 
-    // const qNew = req.query.new;
-    // const qCategory = req.query.category;
-
     // Xử lí sort
     let sort;
     if (req.query.sort === "newest") {
@@ -151,7 +197,13 @@ const productController = {
           .sort(sort)
           .skip(quanti)
           .limit(pageSize)
-          .lean();
+
+          .populate("discountProduct_id", "discount_amount")
+          .populate("sizes", "size inStock")
+          // .populate({
+          //   path: "discountProduct_id",
+          // })
+          .select("title img price discountProduct_id sizes");
 
         totalProduct = await Product.find({
           categories: {
@@ -163,10 +215,17 @@ const productController = {
           .sort(sort)
           .skip(quanti)
           .limit(pageSize)
-          .lean();
+          .populate("discountProduct_id", "discount_amount")
+          .populate("sizes", "size inStock")
+          // .populate({
+          //   path: "discountProduct_id",
+          // })
+          .select("title img price discountProduct_id sizes");
 
         totalProduct = await Product.find().lean();
       }
+
+      // console.log("products", products);
 
       const pagi = {
         page: page,
@@ -214,6 +273,23 @@ const productController = {
       }
 
       res.status(200).json(products);
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  },
+
+  getDiscountProduct: async (req, res) => {
+    try {
+      const findDiscount = await DiscountProduct.findOne({
+        product_id: mongoose.Types.ObjectId(req.params.id),
+      })
+        .select("discount_amount")
+        .lean();
+
+      if (!findDiscount) return res.status(200).json(0);
+
+      console.log("findDiscount", findDiscount);
+      res.status(200).json(findDiscount);
     } catch (err) {
       res.status(500).json(err);
     }

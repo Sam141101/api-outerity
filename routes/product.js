@@ -31,6 +31,12 @@ const PAGE_SIZE = 12;
 
 //GET ALL PRODUCTS
 router.get("/", productController.getAllProduct);
-router.get("/list-product", productController.getAllProductList);
+router.get("/list-product", productController.getAllProductList); // chưa được sử dụng
+
+router.get("/discount-product/:id", productController.getDiscountProduct);
+
+// test model size
+router.post("/create-size/", productController.createSize);
+router.post("/add-size/:id", productController.addSize);
 
 module.exports = router;

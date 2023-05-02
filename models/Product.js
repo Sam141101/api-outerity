@@ -5,12 +5,16 @@ const ProductSchema = new mongoose.Schema(
     title: { type: String, required: true, unique: true },
     desc: { type: String, required: true },
     img: { type: String, required: true },
-    // categories: { type: Array },
     categories: { type: String },
-    size: { type: Array },
+    // size: { type: Array },
+    sizes: [{ type: mongoose.Schema.Types.ObjectId, ref: "Size" }],
     color: { type: Array },
     price: { type: Number, required: true },
-    inStock: { type: Boolean, default: true },
+    discountProduct_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "DiscountProduct",
+    },
+    // inStock: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
