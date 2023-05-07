@@ -9,8 +9,82 @@ const PAGE_SIZE = 12;
 const productController = {
   // Tạo sản phẩm
   createProduct: async (req, res) => {
-    const newProduct = new Product(req.body);
     try {
+      // if (
+      //   !req.body.title ||
+      //   !req.body.desc ||
+      //   !req.body.img ||
+      //   !req.body.categories ||
+      //   !req.body.color ||
+      //   !req.body.sizeS ||
+      //   !req.body.sizeM ||
+      //   !req.body.sizeL
+      // ) {
+      //   res.status(200).json("Vui lòng điền đẩy đủ các thông tin");
+      // }
+
+      const requiredFields = [
+        "title",
+        "desc",
+        "img",
+        "categories",
+        "color",
+        "sizeS",
+        "sizeM",
+        "sizeL",
+      ];
+      if (!requiredFields.every((field) => req.body[field])) {
+        return res.status(200).json("Vui lòng điền đẩy đủ các thông tin");
+      }
+
+      const newProduct = new Product({
+        title: req.body.title,
+        desc: req.body.desc,
+        img: req.body.img,
+        categories: req.body.categories,
+        color: req.body.color,
+        price: req.body.price,
+      });
+
+      let expireTimeAt = null;
+
+      if (req.body.discount && req.body.expireAt) {
+        expireTimeAt = new Date(
+          Date.now() + req.body.expireAt * 60 * 60 * 1000
+        );
+      }
+
+      const newDiscount = new Discount({
+        product_id: newProduct._id,
+        discount_amount: req.body.discount,
+        expireAt: expireTimeAt,
+      });
+
+      await newDiscount.save();
+
+      const newSizeS = new Size({
+        product_id: newProduct._id,
+        size: "S",
+        inStock: req.body.sizeS,
+      });
+
+      await newSizeS.save();
+
+      const newSizeM = new Size({
+        product_id: newProduct._id,
+        size: "M",
+        inStock: req.body.sizeM,
+      });
+      await newSizeM.save();
+
+      const newSizeL = new Size({
+        product_id: newProduct._id,
+        size: "L",
+        inStock: req.body.sizeL,
+      });
+
+      await newSizeL.save();
+
       const savedProduct = await newProduct.save();
       res.status(200).json(savedProduct);
     } catch (err) {
@@ -21,14 +95,118 @@ const productController = {
   //  Cập nhật sản phẩm
   updateProduct: async (req, res) => {
     try {
-      const updatedProduct = await Product.findByIdAndUpdate(
-        req.params.id,
+      const { sizeS, sizeM, sizeL } = req.body;
+
+      if (sizeS || sizeM || sizeL) {
+        const sizesToUpdate = [];
+
+        // Kiểm tra từng size và lấy danh sách các size cần cập nhật vào mảng sizesToUpdate
+        if (sizeS) {
+          sizesToUpdate.push({ size: "S", inStock: sizeS });
+        }
+        if (sizeM) {
+          sizesToUpdate.push({ size: "M", inStock: sizeM });
+        }
+        if (sizeL) {
+          sizesToUpdate.push({ size: "L", inStock: sizeL });
+        }
+
+        // Cập nhật số lượng và giá cho các size trong danh sách sizesToUpdate
+        for (let i = 0; i < sizesToUpdate.length; i++) {
+          const { size, inStock } = sizesToUpdate[i];
+          await Size.findOneAndUpdate(
+            {
+              product_id: req.params.id,
+              size,
+            },
+            {
+              $set: { inStock },
+            },
+            { upsert: true }
+          );
+        }
+      }
+
+      // let findProduct = await Product.findOne({ _id: req.params.id }).lean();
+
+      // if (req.body.title) {
+      //   findProduct.title = req.body.title;
+      // }
+
+      // if (req.body.desc) {
+      //   findProduct.desc = req.body.desc;
+      // }
+
+      // if (req.body.img) {
+      //   findProduct.img = req.body.img;
+      // }
+
+      // if (req.body.color) {
+      //   findProduct.color = req.body.color;
+      // }
+
+      // if (req.body.price) {
+      //   findProduct.price = req.body.price;
+      // }
+
+      // if (req.body.categories) {
+      //   findProduct.categories = req.body.categories;
+      // }
+
+      if (req.body.discount) {
+        const findDiscountProduct = await DiscountProduct.findOne({
+          product_id: mongoose.Types.ObjectId(req.params.id),
+        });
+
+        let expireTimeAt;
+
+        if (findDiscountProduct) {
+          findDiscountProduct.discount_amount = req.body.discount;
+          if (req.body.expireAt) {
+            // req.body.expireAt số tiếng
+            if (req.body.expireAt === 0) {
+              expireTimeAt = null;
+            } else {
+              expireTimeAt = new Date(
+                Date.now() + req.body.expireAt * 60 * 60 * 1000
+              );
+            }
+            findDiscountProduct.expireAt = expireTimeAt;
+            await findDiscountProduct.save();
+          }
+        } else {
+          if (req.body.expireAt === 0) {
+            expireTimeAt = null;
+          } else {
+            expireTimeAt = new Date(
+              Date.now() + req.body.expireAt * 60 * 60 * 1000
+            );
+          }
+          const newDiscount = new DiscountProduct({
+            discount_amount: req.body.discount,
+            expireAt: expireTimeAt,
+          });
+
+          await newDiscount.save();
+        }
+      }
+
+      const updateProduct = await Product.updateOne(
+        { _id: req.params.id },
         {
-          $set: req.body,
+          title: req.body.title,
+          desc: req.body.desc,
+          img: req.body.img,
+          categories: req.body.categories,
+          color: req.body.color,
+          price: req.body.price,
         },
-        { new: true }
+        { upsert: true }
       );
-      res.status(200).json(updatedProduct);
+
+      // await findProduct.save();
+
+      res.status(200).json("Cập nhật thông tin sản phẩm thành công.");
     } catch (err) {
       res.status(500).json(err);
     }
@@ -47,12 +225,6 @@ const productController = {
   // Lấy ra 1 sản phẩm theo id
   getOneProduct: async (req, res) => {
     try {
-      // const product = await Product.findById(req.params.id).populate({
-      //   path: "discountProduct_id",
-      // })
-
-      // .select("title img price discountProduct_id inStock");
-
       const product = await Product.findById(req.params.id)
         .populate("discountProduct_id", "discount_amount")
         .populate("sizes", "size inStock")
@@ -101,60 +273,6 @@ const productController = {
   },
 
   //  Lấy ra tất cả sản phẩm
-  // getAllProduct: async (req, res) => {
-  //   let page = req.query.page;
-  //   const pageSize = parseInt(req.query.limit);
-  //   page = parseInt(page);
-  //   if (page < 1) {
-  //     page = 1;
-  //   }
-  //   let quanti = (page - 1) * pageSize;
-
-  //   const qNew = req.query.new;
-  //   const qCategory = req.query.category;
-  //   try {
-  //     let products;
-
-  //     if (qNew) {
-  //       products = await Product.find().sort({ createdAt: -1 }).limit(1);
-  //     } else if (qCategory) {
-  //       products = await Product.find({
-  //         categories: {
-  //           $in: [qCategory],
-  //         },
-  //       })
-  //         // .sort({ createdAt: -1 })
-  //         .skip(quanti)
-  //         .limit(pageSize);
-  //     } else {
-  //       products = await Product.find();
-  //     }
-
-  //     const total = await Product.find({
-  //       categories: {
-  //         $in: [qCategory],
-  //       },
-  //     });
-
-  //     const totalProduct = total.length;
-
-  //     const pagi = {
-  //       page: page,
-  //       totalRows: totalProduct,
-  //       limit: pageSize,
-  //     };
-
-  //     const results = {
-  //       resultProducts: products,
-  //       pagi: pagi,
-  //     };
-
-  //     res.status(200).json(results);
-  //   } catch (err) {
-  //     res.status(500).json(err);
-  //   }
-  // },
-
   getAllProduct: async (req, res) => {
     // Xử lí số trang hiện tại
     console.log("req", req.query);
@@ -245,33 +363,8 @@ const productController = {
   },
 
   getAllProductList: async (req, res) => {
-    let page = req.query.page;
-    const pageSize = parseInt(req.query.limit);
-    page = parseInt(page);
-    if (page < 1) {
-      page = 1;
-    }
-    let quanti = (page - 1) * pageSize;
-
-    const qNew = req.query.new;
-    const qCategory = req.query.category;
     try {
-      let products;
-
-      if (qNew) {
-        products = await Product.find().sort({ createdAt: -1 }).limit(1).lean();
-      } else if (qCategory) {
-        products = await Product.find({
-          categories: {
-            $in: [qCategory],
-          },
-        })
-          .sort({ createdAt: -1 })
-          .lean();
-      } else {
-        products = await Product.find().sort({ createdAt: -1 }).lean();
-      }
-
+      const products = await Product.find().sort({ createdAt: -1 }).lean();
       res.status(200).json(products);
     } catch (err) {
       res.status(500).json(err);
@@ -290,6 +383,40 @@ const productController = {
 
       console.log("findDiscount", findDiscount);
       res.status(200).json(findDiscount);
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  },
+
+  getDiscountProductAndSize: async (req, res) => {
+    try {
+      const findDiscount = await DiscountProduct.findOne({
+        product_id: mongoose.Types.ObjectId(req.params.id),
+      })
+        .select("discount_amount")
+        .lean();
+
+      // console.log("findDiscount", findDiscount);
+
+      let expireAt;
+      if (findDiscount.expireAt == null) {
+        expireAt = 0;
+        // console.log("fff");
+      } else {
+        const expireTimeUnix = findDiscount.expireAt.getTime();
+        const now = Date.now();
+        expireAt = Math.round((expireTimeUnix - now) / (60 * 60 * 1000));
+      }
+
+      let discount = { ...findDiscount, expireAt: expireAt };
+      // console.log("discount", discount);
+      const findSizes = await Size.find({
+        product_id: mongoose.Types.ObjectId(req.params.id),
+      })
+        .select("size inStock")
+        .lean();
+
+      res.status(200).json({ findDiscount: discount, findSizes: findSizes });
     } catch (err) {
       res.status(500).json(err);
     }

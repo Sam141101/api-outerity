@@ -39,4 +39,9 @@ router.get("/discount-product/:id", productController.getDiscountProduct);
 router.post("/create-size/", productController.createSize);
 router.post("/add-size/:id", productController.addSize);
 
+router.get(
+  "/size-discount-product/:id",
+  productController.getDiscountProductAndSize
+);
+
 module.exports = router;

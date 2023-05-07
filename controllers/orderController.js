@@ -5,6 +5,7 @@ const Product = require("../models/Product");
 const User = require("../models/User");
 const axios = require("axios");
 const Shipping = require("../models/Shipping");
+const Size = require("../models/Size");
 
 const orderController = {
   // Tạo đơn đặt hàng
@@ -122,21 +123,29 @@ const orderController = {
       findUser.firstTimeBuy = findUser.firstTimeBuy + 1;
       await findUser.save();
 
-      await Order.updateOne(
-        {
-          _id: req.body.orderId,
-          userId: req.params.id,
-          status: "delivery",
-        },
-        {
-          $set: {
-            status: "complete",
-            expireAt: null,
-            cancelAt: null,
+      let findOrder = await Order.findOne({
+        _id: req.body.orderId,
+        userId: req.params.id,
+        status: "delivery",
+      }).populate({
+        path: "products",
+        populate: { path: "product_id" },
+      });
+
+      findOrder.status = "complete";
+      findOrder.expireAt = null;
+      findOrder.cancelAt = null;
+      await findOrder.save();
+
+      findOrder.products.forEach(async (item) => {
+        await Size.updateOne(
+          { product_id: item.product_id, size: item.size },
+          {
+            $inc: { inStock: -item.quantity },
           },
-        },
-        { new: true }
-      );
+          { new: true }
+        );
+      });
 
       res.status(200).json("Đã nhận được đơn hàng từ shop");
     } catch (err) {

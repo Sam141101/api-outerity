@@ -148,18 +148,20 @@ const discountController = {
         }
       );
 
-      if (!Discount[0].expiration_date instanceof Date) {
-        // Nếu tham số 'expiration_date' không phải là đối tượng Date, trả về 0
-        return 0;
+      let expireAt;
+
+      if (Discount[0].expiration_date === null) {
+        expireAt = 0;
+        console.log("có");
+      } else {
+        // Chuyển đổi expiration_date từ đối tượng Date sang thời gian Unix
+        const expireTimeUnix = Discount[0].expiration_date.getTime();
+
+        // Tính toán giá trị của expireAt
+        const now = Date.now();
+        expireAt = Math.round((expireTimeUnix - now) / (60 * 60 * 1000));
+        // Discount[0].expiration_date = expireAt;
       }
-
-      // Chuyển đổi expiration_date từ đối tượng Date sang thời gian Unix
-      const expireTimeUnix = Discount[0].expiration_date.getTime();
-
-      // Tính toán giá trị của expireAt
-      const now = Date.now();
-      const expireAt = Math.round((expireTimeUnix - now) / (60 * 60 * 1000));
-      // Discount[0].expiration_date = expireAt;
 
       let discount = { ...Discount[0]._doc, expiration_date: expireAt };
       // const { img, password, isAdmin, ...otherDetails } = user._doc;
