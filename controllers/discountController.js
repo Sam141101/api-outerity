@@ -39,6 +39,25 @@ const discountController = {
   //  Khách hàng bấm sử dụng để check mã giảm giá
   checkDiscount: async (req, res) => {
     try {
+      // if (
+      //   !req.body.provinceName ||
+      //   !req.body.districtName ||
+      //   !req.body.wardName ||
+      //   req.body.provinceId === 0 ||
+      //   req.body.districtId === 0 ||
+      //   req.body.wardId === 0 ||
+      //   !req.body.address
+      // ) {
+
+      //     .json();
+      // }
+
+      if (!req.body.inputs.service_id) {
+        return res
+          .status(200)
+          .json({ message: "Vui lòng điền đầy đủ thông tin!" });
+      }
+
       const currentCustomerId = req.params.id; // ID của khách hàng đang đăng nhập
       const totalPriceOrder = parseFloat(req.params.priceOrder);
 
@@ -152,7 +171,7 @@ const discountController = {
 
       if (Discount[0].expiration_date === null) {
         expireAt = 0;
-        console.log("có");
+        // console.log("có");
       } else {
         // Chuyển đổi expiration_date từ đối tượng Date sang thời gian Unix
         const expireTimeUnix = Discount[0].expiration_date.getTime();

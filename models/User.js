@@ -4,7 +4,6 @@ const Cart = require("../models/Cart");
 const UserSchema = new mongoose.Schema(
   {
     cart_id: { type: mongoose.Schema.Types.ObjectId, ref: "Cart" },
-    // contact: { type: String },
     username: { type: String, unique: true },
     fullname: { type: String },
     email: { type: String, unique: true },

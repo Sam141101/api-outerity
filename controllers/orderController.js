@@ -257,6 +257,8 @@ const orderController = {
     }
   },
 
+  // adminAcceptDelete:
+
   // Admin xác nhận hàng đã được giao
   adminAcceptDelivery: async (req, res) => {
     try {

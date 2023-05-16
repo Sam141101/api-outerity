@@ -13,7 +13,7 @@ router.get(
 );
 
 // Client sử dụng 1 mã giảm giá
-router.get(
+router.post(
   "/use-coupon/:id/:couponCode/:priceOrder",
   middlewareController.verifyTokenAndAuthorization,
   discountController.checkDiscount

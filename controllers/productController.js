@@ -392,11 +392,10 @@ const productController = {
     try {
       const findDiscount = await DiscountProduct.findOne({
         product_id: mongoose.Types.ObjectId(req.params.id),
+        // product_id: req.params.id,
       })
         .select("discount_amount")
         .lean();
-
-      // console.log("findDiscount", findDiscount);
 
       let expireAt;
       if (findDiscount.expireAt == null) {

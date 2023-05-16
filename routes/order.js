@@ -52,9 +52,17 @@ router.get(
 
 // Admin xác nhận hàng đã được giao
 router.put(
-  "/order-delivery/:id",
+  // "/order-delivery/:id",
+  "find/order-delivery/:id",
   middlewareController.verifyTokenAndAdmin,
   orderController.adminAcceptDelivery
+);
+
+// Admin xoá đơn hàng đã bị huỷ
+router.put(
+  "find/order-delete/:id",
+  middlewareController.verifyTokenAndAdmin,
+  orderController.adminDeleteOrder
 );
 
 // Admin xoá đơn đặt hàng

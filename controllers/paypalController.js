@@ -170,6 +170,14 @@ const paypalController = {
         intent: "sale",
         payer: {
           payment_method: "paypal",
+          // thêm address
+          // address: {
+          //   line1: "123 Address St",
+          //   city: "City",
+          //   state: "State",
+          //   postal_code: "12345",
+          //   country_code: "US",
+          // },
         },
         redirect_urls: {
           // return_url: "http://localhost:3000/test11",
