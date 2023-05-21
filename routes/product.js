@@ -38,10 +38,14 @@ router.get("/discount-product/:id", productController.getDiscountProduct);
 // test model size
 router.post("/create-size/", productController.createSize);
 router.post("/add-size/:id", productController.addSize);
+router.get("/add-discount/:id", productController.addDiscount);
 
 router.get(
   "/size-discount-product/:id",
   productController.getDiscountProductAndSize
 );
+
+router.get("/size/:id", productController.createSize);
+router.get("/add-size/:id", productController.addSize);
 
 module.exports = router;

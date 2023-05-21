@@ -39,20 +39,8 @@ const discountController = {
   //  Khách hàng bấm sử dụng để check mã giảm giá
   checkDiscount: async (req, res) => {
     try {
-      // if (
-      //   !req.body.provinceName ||
-      //   !req.body.districtName ||
-      //   !req.body.wardName ||
-      //   req.body.provinceId === 0 ||
-      //   req.body.districtId === 0 ||
-      //   req.body.wardId === 0 ||
-      //   !req.body.address
-      // ) {
-
-      //     .json();
-      // }
-
-      if (!req.body.inputs.service_id) {
+      // check xem có service_id chưa
+      if (!req.body.inputs) {
         return res
           .status(200)
           .json({ message: "Vui lòng điền đầy đủ thông tin!" });

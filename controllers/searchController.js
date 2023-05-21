@@ -72,6 +72,40 @@ const searchController = {
         },
       ]);
 
+      // const search = await Product.aggregate([
+      //   {
+      //     $search: {
+      //       index: "custom1",
+      //       compound: {
+      //         should: [
+      //           {
+      //             autocomplete: {
+      //               path: "title",
+      //               query: req.query.search,
+      //             },
+      //           },
+      //           {
+      //             text: {
+      //               path: "title",
+      //               query: req.query.search,
+      //               fuzzy: { maxEdits: 1 },
+      //             },
+      //           },
+      //         ],
+      //         minimumShouldMatch: 1,
+      //       },
+      //     },
+      //   },
+      //   {
+      //     $match: {
+      //       categories: req.query.category,
+      //     },
+      //   },
+      //   {
+      //     $limit: 5,
+      //   },
+      // ]);
+
       res.status(200).json(search);
     } catch (err) {
       res.status(500).json(err);

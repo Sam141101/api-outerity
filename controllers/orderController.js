@@ -35,7 +35,7 @@ const orderController = {
         {
           $set: {
             fullname: req.body.inputs.fullname,
-            address: req.body.inputs.address,
+            // address: req.body.inputs.address,
             phone: req.body.inputs.phone,
           },
         }
@@ -266,6 +266,8 @@ const orderController = {
         _id: mongoose.Types.ObjectId(req.params.id),
       }).lean();
 
+      console.log("số 1");
+
       let order = await Order.findOne({
         _id: req.body.orderId,
         userId: req.params.id,
@@ -275,32 +277,19 @@ const orderController = {
         populate: { path: "product_id" },
       });
 
+      console.log("số 2");
+
       order.status = "delivery";
       order.expireAt = null;
       order.cancelAt = null;
       await order.save();
-
-      // await Order.updateOne(
-      //   {
-      //     _id: req.body.orderId,
-      //     userId: req.params.id,
-      //     status: "accept",
-      //   },
-      //   {
-      //     $set: {
-      //       status: "delivery",
-      //       expireAt: null,
-      //       cancelAt: null,
-      //     },
-      //   },
-      //   { new: true }
-      // );
 
       let cod_amount = 0; // Tiền thu hộ cho người gửi.
 
       if (order.method === "receive") {
         cod_amount = order.amount;
       }
+      console.log("số 3");
 
       // Danh sách sản phẩm
       let quantiProduct = 0; // tổng số sản phẩm
@@ -311,15 +300,15 @@ const orderController = {
 
         // const product = await Product.findOne({ _id: order.products[i].product_id }).lean();
         let item = {
-          name: order.products[i].product_id.title,
-          code: order.products[i].product_id._id,
-          quantity: order.products[i].quantity,
-          price: order.products[i].product_id.price,
+          name: order.products[i].product_id.title.toString(),
+          code: order.products[i].product_id._id.toString(),
+          quantity: Number(order.products[i].quantity),
+          price: Number(order.products[i].product_id.price),
           length: 80,
           width: 30,
           height: 1 * Number(order.products[i].quantity),
           category: {
-            level1: order.products[i].product_id.categories,
+            level1: order.products[i].product_id.categories.toString(),
           },
         };
         items.push(item);
@@ -338,45 +327,53 @@ const orderController = {
 
       const shopid = Number(process.env.SHOPID);
 
-      const shipping = await Shipping({
+      const shipping = await Shipping.findOne({
         order_id: mongoose.Types.ObjectId(order._id),
       }).lean();
 
       // API Tạo đơn trên giao hàng nhanh
       const getPriceServiceGHN = await axios.post(
-        "https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee",
+        // "https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee", // sai
+        "https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/create",
         {
-          payment_type_id: 2,
-          note: "Nhẹ nhàng, cẩn thận với hàng hoá",
-          required_note: "CHOTHUHANG",
-          return_phone: process.env.SDT,
-          return_address: findShopAddress.address,
-          return_district_id: findShopAddress.district_id,
-          return_ward_code: findShopAddress.ward_id,
+          payment_type_id: 2, // -
+          note: "Nhẹ nhàng, cẩn thận với hàng hoá", // -
+          required_note: "CHOTHUHANG", // -
+          return_phone: process.env.SDT.toString(), // -
+          return_address: findShopAddress.address, // -
+          return_district_id: Number(findShopAddress.district_id), // -
+          return_ward_code: findShopAddress.ward_id.toString(), // -
           client_order_code: "",
-          to_name: findUser.fullname, // Tên người nhận
-          to_phone: findUser.phone, // Số điện thoại người nhận hàng.
-          to_address: `${findReceiver.address}, ${findReceiver.ward}, ${findReceiver.district}, Tỉnh ${findReceiver.province}, Vietnam`,
-          to_ward_name: `${findReceiver.ward}`,
-          to_district_name: `${findReceiver.district}`,
+          to_name: findUser.fullname.toString(), // Tên người nhận  -
+          to_phone: findUser.phone.toString(), // Số điện thoại người nhận hàng. -
+          to_address: `${findReceiver.address}, ${findReceiver.ward}, ${findReceiver.district}, Tỉnh ${findReceiver.province}, Vietnam`, // -
+          // to_ward_name: `${findReceiver.ward}`,
+
+          to_ward_code: `${findReceiver.ward_id}`, // -
+
+          // to_district_name: `${findReceiver.district}`,
+          to_district_id: Number(findReceiver.district), // -
           to_province_name: `${findReceiver.province}`,
-          cod_amount: cod_amount,
-          content: "Vận chuyển qua giao hàng nhanh",
-          height: 1 * quantiProduct,
-          length: 80,
-          weight: 1500 * quantiProduct,
-          width: 30,
+          cod_amount: Number(cod_amount), // -
+          content: "Vận chuyển qua giao hàng nhanh", // -
+          height: 1 * quantiProduct, // -
+          length: 80, // -
+          weight: 1500 * quantiProduct, // -
+          width: 30, // -
 
           cod_failed_amount: 2000,
           pick_station_id: findReceiver.findReceiver, // Mã bưu cục
 
           deliver_station_id: null,
-          insurance_value: order.amount,
-          service_id: shipping.service_id,
-          service_type_id: 0,
-          coupon: null,
-          pick_shift: [req.body.pick_shift.id], // Dùng để truyền ca lấy hàng , Sử dụng API Lấy danh sách ca lấy
+          insurance_value: Number(order.amount),
+          service_id: Number(shipping.service_id), // -
+          service_type_id: 0, // -
+          coupon: null, // -
+          // pick_shift: [req.body.pick_shift.id], // Dùng để truyền ca lấy hàng , Sử dụng API Lấy danh sách ca lấy
+          pick_shift: req.body.pick_shift, // Dùng để truyền ca lấy hàng , Sử dụng API Lấy danh sách ca lấy --
           items: items,
+
+          pickup_time: 1665272576,
         },
         {
           headers: {
@@ -389,6 +386,7 @@ const orderController = {
 
       res.status(200).json("Đơn hàng đã được chuyển đi...");
     } catch (err) {
+      console.log(err);
       res.status(500).json(err);
     }
   },
@@ -430,7 +428,9 @@ const orderController = {
         { new: true }
       );
 
-      res.status(200).json("Đơn hàng đã được thanh toán...");
+      console.log("chấp thuận đơn hàng");
+
+      res.status(200).json("Đơn hàng đã được chấp thuận...");
     } catch (err) {
       res.status(500).json(err);
     }
@@ -514,8 +514,81 @@ const orderController = {
       // );
       // res.status(200).json(updatedOrder);
 
-      const orders = await Order.find().lean();
+      const orders = await Order.find().sort({ createdAt: -1 }).limit(5).lean();
       res.status(200).json(orders);
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  },
+
+  getAllOrderAmountStatus: async (req, res) => {
+    try {
+      const pending = await Order.countDocuments({
+        userId: req.params.id,
+        status: "pending",
+      });
+
+      const accept = await Order.countDocuments({
+        userId: req.params.id,
+        status: "accept",
+      });
+
+      const delivery = await Order.countDocuments({
+        userId: req.params.id,
+        status: "delivery",
+      });
+
+      const complete = await Order.countDocuments({
+        userId: req.params.id,
+        status: "complete",
+      });
+
+      const cancel = await Order.countDocuments({
+        userId: req.params.id,
+        status: "cancel",
+      });
+
+      res.status(200).json({
+        pending: pending,
+        accept: accept,
+        delivery: delivery,
+        complete: complete,
+        cancel: cancel,
+      });
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  },
+
+  getAdminAllOrderAmountStatus: async (req, res) => {
+    try {
+      const pending = await Order.countDocuments({
+        status: "pending",
+      });
+
+      const accept = await Order.countDocuments({
+        status: "accept",
+      });
+
+      const delivery = await Order.countDocuments({
+        status: "delivery",
+      });
+
+      const complete = await Order.countDocuments({
+        status: "complete",
+      });
+
+      const cancel = await Order.countDocuments({
+        status: "cancel",
+      });
+
+      res.status(200).json({
+        pending: pending,
+        accept: accept,
+        delivery: delivery,
+        complete: complete,
+        cancel: cancel,
+      });
     } catch (err) {
       res.status(500).json(err);
     }

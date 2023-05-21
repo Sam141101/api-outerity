@@ -30,7 +30,8 @@ const shippingController = {
           service_id: Number(req.body.service_id),
           service_type_id: null,
           to_district_id: Number(req.body.to_district_id),
-          to_ward_code: Number(req.body.to_ward_code),
+          // to_ward_code: Number(req.body.to_ward_code),
+          to_ward_code: req.body.to_ward_code.toString(),
           height: 1 * Number(req.body.quantiProduct),
           length: 80,
           weight: 1500 * Number(req.body.quantiProduct),
@@ -43,6 +44,7 @@ const shippingController = {
             token: process.env.TOKEN,
             shopid: shopid,
             "Content-type": "application/json",
+            // "Content-type": "text/plain",
           },
         }
       );

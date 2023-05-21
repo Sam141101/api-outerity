@@ -159,7 +159,7 @@ const cartController = {
       );
 
       // res.status(200).json(updatedCart);
-      res.status(200).json("hoan thanh");
+      res.status(200).json("Cập nhật thành công");
     } catch (err) {
       res.status(500).json(err);
     }

@@ -29,7 +29,7 @@ const OrderSchema = new mongoose.Schema(
     method: { type: String },
     descCoupon: { type: String },
     amountCoupon: { type: Number },
-
+    transportFee: { type: Number, default: 0 },
     status: { type: String, default: "pending" },
     expireAt: { type: Date, default: undefined, index: { expires: "0s" } }, // thêm field expireAt
     cancelAt: { type: Date },

@@ -53,19 +53,19 @@ router.get(
 // Admin xác nhận hàng đã được giao
 router.put(
   // "/order-delivery/:id",
-  "find/order-delivery/:id",
+  "/find/order-delivery/:id",
   middlewareController.verifyTokenAndAdmin,
   orderController.adminAcceptDelivery
 );
 
-// Admin xoá đơn hàng đã bị huỷ
+// Admin xoá đơn hàng đã bị huỷ                   // trùng Admin xoá đơn đặt hàng
 router.put(
-  "find/order-delete/:id",
+  "/find/order-delete/:id",
   middlewareController.verifyTokenAndAdmin,
   orderController.adminDeleteOrder
 );
 
-// Admin xoá đơn đặt hàng
+// Admin xoá đơn đặt hàng                         // trùng Admin xoá đơn hàng đã bị huỷ
 router.delete(
   "/:id",
   middlewareController.verifyToken,
@@ -98,6 +98,20 @@ router.get(
   "/",
   middlewareController.verifyTokenAndAdmin,
   orderController.getAllOrder
+);
+
+// Get all amount status order user
+router.get(
+  "/amount-order-status/:id",
+  // middlewareController.verifyTokenAndAdmin,
+  orderController.getAllOrderAmountStatus
+);
+
+// Admin get all amount status order
+router.get(
+  "/amount-order-status/",
+  // middlewareController.verifyTokenAndAdmin,
+  orderController.getAdminAllOrderAmountStatus
 );
 
 module.exports = router;

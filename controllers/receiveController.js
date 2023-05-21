@@ -5,6 +5,7 @@ const ListProduct = require("../models/ListProduct");
 const Order = require("../models/Order");
 
 const User = require("../models/User");
+const Shipping = require("../models/Shipping");
 
 const receiveController = {
   // thanh toán khi nhận hàng
