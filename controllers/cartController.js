@@ -8,22 +8,31 @@ const cartController = {
   addProductToCart: async (req, res) => {
     try {
       // Tìm tới user trong mảng user
-      const user = await User.findOne({ _id: req.body.userId });
+      const user = await User.findOne({ _id: req.body.userId }).lean();
       // Tìm tới user trong mảng user
-      const cart = await Cart.findOne({ _id: user.cart_id._id });
+      const cart = await Cart.findOne({ _id: user.cart_id._id }).lean();
 
       // // Lấy ra được giá tiền của sản phẩm
-      const getProduct_id = await Product.findOne({
-        _id: req.body.product_id,
-      });
-      const price = getProduct_id.price;
+      // const getProduct_id = await Product.findOne({
+      //   _id: req.body.product_id,
+      // }).lean();
+      let price;
+      const getProduct_id = await Product.findOne({ _id: req.body.product_id })
+        .populate("discountProduct_id", "discount_amount")
+        .populate("sizes", "size inStock");
+
+      if (Number(req.body.discount) > 0) {
+        price = getProduct_id.price * (1 - Number(req.body.discount) / 100);
+      } else {
+        price = getProduct_id.price;
+      }
+
+      // console.log("getProduct_id", getProduct_id);
+
+      // console.log("price", price);
+      // const price = getProduct_id.price;
 
       // --------------- kiểm tra sản phẩm đã tồn tại trong giỏ hàng hay chưa ở trong Cart ----------------
-      // const checkListProduct = await Cart.findOne({
-      //   _id: user.cart_id,
-      //   // list_product: { $in: [[]] },
-      //   // list_product: { $size: 0 },
-      // });
 
       const checkListProduct = await Cart.findOne({
         _id: user.cart_id,
@@ -40,6 +49,7 @@ const cartController = {
       if (test.length === 0) {
         console.log("không");
         // tạo ra 1 { list product }
+
         const newListProduct = new ListProduct({
           cart_id: cart._id,
           product_id: req.body.product_id,
@@ -106,6 +116,7 @@ const cartController = {
       const getCart = await Cart.findOne({ _id: user.cart_id._id });
       console.log("sut thanh cong");
       res.status(200).json(getCart);
+      // res.status(200).json("getCart");
     } catch (err) {
       console.log("failer");
       res.status(500).json(err);
@@ -202,15 +213,22 @@ const cartController = {
       // const rf = req.cookies.refreshToken;
       // console.log("token-cookie", rf);
 
-      const user = await User.findOne({ _id: req.params.id });
-      const cart = await Cart.findOne({ _id: user.cart_id });
+      const user = await User.findOne({ _id: req.params.id }).lean();
+      const cart = await Cart.findOne({ _id: user.cart_id }).lean();
 
       const total_price = cart.total_price;
       const total_quanti = cart.total_quantity;
+      // const getCart = await ListProduct.find({
+      //   cart_id: cart._id,
+      // }).populate({
+      //   path: "product_id",
+      // });
+
       const getCart = await ListProduct.find({
         cart_id: cart._id,
       }).populate({
         path: "product_id",
+        populate: { path: "discountProduct_id" },
       });
 
       const getallcart = {
