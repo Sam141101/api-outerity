@@ -5,21 +5,143 @@ const ListProduct = require("../models/ListProduct");
 
 const cartController = {
   // Thêm sản phẩm vào giỏ hàng
+  // addProductToCart: async (req, res) => {
+  //   try {
+  //     console.time("myTimer");
+
+  //     // Tìm tới user trong mảng user
+  //     const user = await User.findOne({ _id: req.body.userId }).lean();
+  //     // Tìm tới user trong mảng user
+  //     const cart = await Cart.findOne({ _id: user.cart_id._id }).lean();
+
+  //     // // Lấy ra được giá tiền của sản phẩm     // req.body.product_id
+  //     let price;
+  //     const getProduct_id = await Product.findOne({ _id: req.body.product_id })
+  //       .populate("discountProduct_id", "discount_amount")
+  //       .populate("sizes", "size inStock");
+
+  //     if (Number(req.body.discount) > 0) {
+  //       price = getProduct_id.price * (1 - Number(req.body.discount) / 100);
+  //     } else {
+  //       price = getProduct_id.price;
+  //     }
+
+  //     // console.log("getProduct_id", getProduct_id);
+
+  //     // console.log("price", price);
+  //     // const price = getProduct_id.price;
+
+  //     // --------------- kiểm tra sản phẩm đã tồn tại trong giỏ hàng hay chưa ở trong Cart ----------------
+
+  //     const checkListProduct = await Cart.findOne({
+  //       _id: user.cart_id,
+  //     }).populate({
+  //       path: "list_product",
+  //     });
+
+  //     let test = checkListProduct.list_product.filter(
+  //       (item) =>
+  //         item.product_id == req.body.product_id &&
+  //         item.size == req.body.size_sp
+  //     );
+
+  //     if (test.length === 0) {
+  //       console.log("không");
+  //       // tạo ra 1 { list product }
+
+  //       const newListProduct = new ListProduct({
+  //         cart_id: cart._id,
+  //         product_id: req.body.product_id,
+  //         quantity: req.body.quantity_sp,
+  //         size: req.body.size_sp,
+  //         price: price * req.body.quantity_sp,
+  //       });
+
+  //       await newListProduct.save();
+
+  //       // cập nhật lại giỏ hàng
+  //       const currentTotalQuanti = cart.total_quantity;
+  //       let newTotalQuanti = currentTotalQuanti + 1;
+
+  //       const currentTotalPrice = cart.total_price;
+  //       let newTotalPrice = currentTotalPrice + req.body.quantity_sp * price;
+
+  //       const updateCart = await Cart.updateOne(
+  //         { _id: user.cart_id._id },
+  //         {
+  //           $push: { list_product: newListProduct._id },
+  //           $set: {
+  //             total_quantity: newTotalQuanti,
+  //             total_price: newTotalPrice,
+  //           },
+  //         },
+  //         { new: true }
+  //       );
+  //     } else {
+  //       console.log("có");
+  //       // cập nhật lại số lượng sản phẩm
+  //       const getQuanti = await ListProduct.findOne({
+  //         cart_id: cart._id,
+  //         product_id: req.body.product_id,
+  //       });
+  //       const currentQuanti = getQuanti.quantity;
+  //       let newQuanti = currentQuanti + req.body.quantity_sp;
+
+  //       // cập nhật lại giá tiền sản phẩm
+  //       const currentPrice = getQuanti.price;
+  //       let newPrice = currentPrice + req.body.quantity_sp * price;
+
+  //       const updateListProduct = await ListProduct.updateOne(
+  //         { cart_id: cart._id, product_id: req.body.product_id },
+  //         {
+  //           $set: { quantity: newQuanti, price: newPrice },
+  //         }
+  //       );
+  //       // cập nhật lại giỏ hàng
+  //       const currentTotalPrice = cart.total_price;
+  //       let newTotalPrice = currentTotalPrice + req.body.quantity_sp * price;
+
+  //       const updateCart = await Cart.updateOne(
+  //         { _id: user.cart_id._id },
+  //         {
+  //           $set: {
+  //             total_price: newTotalPrice,
+  //           },
+  //         },
+  //         { new: true }
+  //       );
+  //     }
+
+  //     const getCart = await Cart.findOne({ _id: user.cart_id._id });
+  //     console.log("sut thanh cong");
+  //     console.timeEnd("myTimer");
+
+  //     res.status(200).json(getCart);
+  //     // res.status(200).json("getCart");
+  //   } catch (err) {
+  //     console.log("failer");
+  //     res.status(500).json(err);
+  //   }
+  // },
+
   addProductToCart: async (req, res) => {
     try {
+      console.time("myTimer");
+
+      console.log("req.body", req.body);
+      // let cart_update;
       // Tìm tới user trong mảng user
       const user = await User.findOne({ _id: req.body.userId }).lean();
       // Tìm tới user trong mảng user
-      const cart = await Cart.findOne({ _id: user.cart_id._id }).lean();
+      let cart = await Cart.findOne({ _id: user.cart_id._id }).populate({
+        path: "list_product",
+      });
 
-      // // Lấy ra được giá tiền của sản phẩm
-      // const getProduct_id = await Product.findOne({
-      //   _id: req.body.product_id,
-      // }).lean();
+      // Lấy ra được giá tiền của sản phẩm     // req.body.product_id
       let price;
-      const getProduct_id = await Product.findOne({ _id: req.body.product_id })
-        .populate("discountProduct_id", "discount_amount")
-        .populate("sizes", "size inStock");
+      const getProduct_id = await Product.findOne({
+        _id: req.body.product_id,
+      }).populate("discountProduct_id", "discount_amount");
 
       if (Number(req.body.discount) > 0) {
         price = getProduct_id.price * (1 - Number(req.body.discount) / 100);
@@ -27,20 +149,8 @@ const cartController = {
         price = getProduct_id.price;
       }
 
-      // console.log("getProduct_id", getProduct_id);
-
-      // console.log("price", price);
-      // const price = getProduct_id.price;
-
-      // --------------- kiểm tra sản phẩm đã tồn tại trong giỏ hàng hay chưa ở trong Cart ----------------
-
-      const checkListProduct = await Cart.findOne({
-        _id: user.cart_id,
-      }).populate({
-        path: "list_product",
-      });
-
-      let test = checkListProduct.list_product.filter(
+      // // --------------- kiểm tra sản phẩm đã tồn tại trong giỏ hàng hay chưa ở trong Cart ----------------
+      let test = cart.list_product.filter(
         (item) =>
           item.product_id == req.body.product_id &&
           item.size == req.body.size_sp
@@ -48,8 +158,6 @@ const cartController = {
 
       if (test.length === 0) {
         console.log("không");
-        // tạo ra 1 { list product }
-
         const newListProduct = new ListProduct({
           cart_id: cart._id,
           product_id: req.body.product_id,
@@ -57,17 +165,15 @@ const cartController = {
           size: req.body.size_sp,
           price: price * req.body.quantity_sp,
         });
-
         await newListProduct.save();
 
         // cập nhật lại giỏ hàng
         const currentTotalQuanti = cart.total_quantity;
         let newTotalQuanti = currentTotalQuanti + 1;
-
         const currentTotalPrice = cart.total_price;
         let newTotalPrice = currentTotalPrice + req.body.quantity_sp * price;
 
-        const updateCart = await Cart.updateOne(
+        cart = await Cart.findOneAndUpdate(
           { _id: user.cart_id._id },
           {
             $push: { list_product: newListProduct._id },
@@ -81,28 +187,25 @@ const cartController = {
       } else {
         console.log("có");
         // cập nhật lại số lượng sản phẩm
-        const getQuanti = await ListProduct.findOne({
-          cart_id: cart._id,
-          product_id: req.body.product_id,
-        });
-        const currentQuanti = getQuanti.quantity;
-        let newQuanti = currentQuanti + req.body.quantity_sp;
-
-        // cập nhật lại giá tiền sản phẩm
-        const currentPrice = getQuanti.price;
-        let newPrice = currentPrice + req.body.quantity_sp * price;
-
-        const updateListProduct = await ListProduct.updateOne(
-          { cart_id: cart._id, product_id: req.body.product_id },
+        const updateListProduct = await ListProduct.findOneAndUpdate(
           {
-            $set: { quantity: newQuanti, price: newPrice },
-          }
+            cart_id: cart._id,
+            product_id: req.body.product_id,
+          },
+          {
+            $inc: {
+              quantity: req.body.quantity_sp,
+              price: req.body.quantity_sp * price,
+            },
+          },
+          { new: true }
         );
+
         // cập nhật lại giỏ hàng
         const currentTotalPrice = cart.total_price;
         let newTotalPrice = currentTotalPrice + req.body.quantity_sp * price;
 
-        const updateCart = await Cart.updateOne(
+        cart = await Cart.findOneAndUpdate(
           { _id: user.cart_id._id },
           {
             $set: {
@@ -113,9 +216,11 @@ const cartController = {
         );
       }
 
-      const getCart = await Cart.findOne({ _id: user.cart_id._id });
+      console.log("cart1", cart);
+
       console.log("sut thanh cong");
-      res.status(200).json(getCart);
+      console.timeEnd("myTimer");
+      res.status(200).json(cart);
       // res.status(200).json("getCart");
     } catch (err) {
       console.log("failer");
