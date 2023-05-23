@@ -13,9 +13,9 @@ const receiveController = {
     try {
       // console.log("req.body", req.body);
       if (
-        !req.body.inputs.fullname ||
-        !req.body.inputs.phone ||
-        !req.body.inputs.service_id ||
+        // !req.body.inputs.fullname ||
+        // !req.body.inputs.phone ||
+        // !req.body.inputs.service_id ||
         !req.body.totalPriceDelivery
       ) {
         res.status(200).json("Vui lòng điền đầy đủ thông tin!");

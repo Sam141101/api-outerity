@@ -8,20 +8,20 @@ const addressController = {
   // Tạo 1 địa chỉ
   createAddress: async (req, res) => {
     try {
-      if (
-        !req.params.id ||
-        !req.body.provinceName ||
-        !req.body.districtName ||
-        !req.body.wardName ||
-        req.body.provinceId === 0 ||
-        req.body.districtId === 0 ||
-        req.body.wardId === 0 ||
-        !req.body.address
-      ) {
-        return res
-          .status(200)
-          .json({ message: "Vui lòng xem lại thông tin vừa nhập." });
-      }
+      // if (
+      //   !req.params.id ||
+      //   !req.body.provinceName ||
+      //   !req.body.districtName ||
+      //   !req.body.wardName ||
+      //   req.body.provinceId === 0 ||
+      //   req.body.districtId === 0 ||
+      //   req.body.wardId === 0 ||
+      //   !req.body.address
+      // ) {
+      //   return res
+      //     .status(200)
+      //     .json({ message: "Vui lòng xem lại thông tin vừa nhập." });
+      // }
 
       const addAddress = new Address({
         user_id: req.params.id,
@@ -45,20 +45,20 @@ const addressController = {
   // update 1 địa chỉ
   updateAddress: async (req, res) => {
     try {
-      if (
-        !req.params.id ||
-        !req.body.provinceName ||
-        !req.body.districtName ||
-        !req.body.wardName ||
-        req.body.provinceId === 0 ||
-        req.body.districtId === 0 ||
-        req.body.wardId === 0 ||
-        !req.body.address
-      ) {
-        return res
-          .status(200)
-          .json({ message: "Vui lòng xem lại thông tin vừa nhập." });
-      }
+      // if (
+      //   !req.params.id ||
+      //   !req.body.provinceName ||
+      //   !req.body.districtName ||
+      //   !req.body.wardName ||
+      //   req.body.provinceId === 0 ||
+      //   req.body.districtId === 0 ||
+      //   req.body.wardId === 0 ||
+      //   !req.body.address
+      // ) {
+      //   return res
+      //     .status(200)
+      //     .json({ message: "Vui lòng xem lại thông tin vừa nhập." });
+      // }
       const updateAddress = await Address.updateOne(
         {
           user_id: mongoose.Types.ObjectId(req.params.id),

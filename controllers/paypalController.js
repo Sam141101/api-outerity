@@ -27,9 +27,9 @@ const paypalController = {
   payment: async (req, res) => {
     try {
       if (
-        !req.body.inputs.fullname ||
-        !req.body.inputs.phone ||
-        !req.body.inputs.service_id ||
+        // !req.body.inputs.fullname ||
+        // !req.body.inputs.phone ||
+        // !req.body.inputs.service_id ||
         !req.body.totalPriceDelivery
       ) {
         res.json("Vui lòng điền đầy đủ thông tin!");
@@ -210,7 +210,9 @@ const paypalController = {
           // cancel_url: "http://localhost:3000/test12",
 
           return_url: "http://localhost:3000/dat-hang-thanh-cong",
+          // return_url: `${process.env.BASE_URL}dat-hang-thanh-cong`,
           cancel_url: "http://localhost:3000/dat-hang-that-bai",
+          // cancel_url: `${process.env.BASE_URL}dat-hang-that-bai`,
         },
         transactions: [
           {
