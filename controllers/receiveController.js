@@ -11,27 +11,28 @@ const receiveController = {
   // thanh toán khi nhận hàng
   receive: async (req, res) => {
     try {
-      console.log(req.body);
-
+      // console.log("req.body", req.body);
       if (
         !req.body.inputs.fullname ||
         !req.body.inputs.phone ||
-        !req.body.inputs.service_id
+        !req.body.inputs.service_id ||
+        !req.body.totalPriceDelivery
       ) {
         res.status(200).json("Vui lòng điền đầy đủ thông tin!");
       }
 
       const products = req.body.cart.map((element) => {
         return {
-          product_id: element.product_id,
+          product_id: element.product_id._id,
           quantity: element.quantity,
           price: element.price,
           size: element.size,
+          discount: element.product_id.discountProduct_id.discount_amount,
         };
       });
 
-      let phoneNumber = req.body.inputs.phone;
-      const phoneRegex = /^0\d{9}$/;
+      let phoneNumber = req.body.inputs.phone.toString();
+      const phoneRegex = /^(0|84)\d{9,10}$/;
       if (phoneRegex.test(phoneNumber)) {
         console.log("Số điện thoại hợp lệ");
         if (phoneNumber.startsWith("0")) {
@@ -39,7 +40,7 @@ const receiveController = {
         }
       } else {
         console.log("Số điện thoại không hợp lệ");
-        res.status(200).json("Số điện thoại không hợp lệ!");
+        return res.status(400).json("Số điện thoại không hợp lệ!");
       }
 
       await User.updateOne(
@@ -47,7 +48,6 @@ const receiveController = {
         {
           $set: {
             fullname: req.body.inputs.fullname,
-            // phone: req.body.inputs.phone,
             phone: phoneNumber,
           },
         }
@@ -62,39 +62,37 @@ const receiveController = {
         });
 
         if (voucher) {
-          if (voucher.discount_type === "percentage") {
-            totalPriceOrder *= (100 - voucher.discount_amount) / 100; // tính giá tiền đã giảm giá
-            totalPriceOrder = totalPriceOrder.toFixed(2);
-          } else {
-            totalPriceOrder -= voucher.discount_amount; // tính giá tiền đã giảm giá
-            totalPriceOrder = totalPriceOrder.toFixed(2);
-          }
-
           if (voucher.type_user === "people") {
             voucher.used_by.push(req.body.userId);
           } else {
             voucher.is_redeemed = true;
-            // voucher.is_single_use = true;
           }
 
           await voucher.save();
         }
       }
 
-      console.log(totalPriceOrder);
+      // console.log(totalPriceOrder);
       const now = new Date();
       const expiresInMs = 60 * 60 * 24 * 1000; // Thời gian hết hạn của document là 1 ngày
       const expireAt = new Date(now.getTime() + expiresInMs);
 
       const newOrder = new Order({
         userId: req.body.userId,
-        products,
+        products: products,
         method: req.body.inputs.method,
         amount: totalPriceOrder,
-        expireAt, // set giá trị của expireAt
+        expireAt: expireAt, // set giá trị của expireAt
         status: "pending", // status ban đầu là "pending"
         cancelAt: null,
+        transportFee: req.body.totalPriceDelivery,
       });
+
+      if (voucher) {
+        // kiểm tra xem có voucher hay không
+        newOrder.descCoupon = voucher.descCoupon;
+        newOrder.amountCoupon = voucher.amountCoupon;
+      }
 
       const saveOrder = await newOrder.save();
       const orderId = saveOrder._id;

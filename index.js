@@ -45,6 +45,7 @@ const corsOptions = {
   // origin: "http://localhost:3000",
   origin: [
     "http://localhost:3000",
+    process.env.PRODUCTION,
     "https://sell-vercel-admin.vercel.app",
     "https://page-user.vercel.app",
   ],

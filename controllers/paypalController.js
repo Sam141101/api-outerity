@@ -14,7 +14,7 @@ const Shipping = require("../models/Shipping");
 
 function moneyUSAChange(moneyVND) {
   let mn = parseFloat(moneyVND / 22000);
-  // console.log("money", typeof Number(mn.toFixed(2)));
+  console.log("money", mn, typeof mn);
   return Number(mn.toFixed(2));
 }
 
@@ -29,10 +29,13 @@ const paypalController = {
       if (
         !req.body.inputs.fullname ||
         !req.body.inputs.phone ||
-        !req.body.inputs.service_id
+        !req.body.inputs.service_id ||
+        !req.body.totalPriceDelivery
       ) {
         res.json("Vui lòng điền đầy đủ thông tin!");
       }
+
+      let priceDelivery = moneyUSAChange(req.body.totalPriceDelivery);
 
       let voucher;
       let totalPriceOrder = req.body.totalPrice;
@@ -44,8 +47,35 @@ const paypalController = {
           quantity: element.quantity,
           price: element.price,
           size: element.size,
+          discount: element.product_id.discountProduct_id.discount_amount,
         };
         products.push(t1);
+      });
+
+      let phoneNumber = req.body.inputs.phone.toString();
+      const phoneRegex = /^(0|84)\d{9,10}$/;
+      if (phoneRegex.test(phoneNumber)) {
+        console.log("Số điện thoại hợp lệ");
+        if (phoneNumber.startsWith("0")) {
+          phoneNumber = "84" + phoneNumber.substring(1);
+        }
+      } else {
+        console.log("Số điện thoại không hợp lệ");
+        return res.status(400).json("Số điện thoại không hợp lệ!");
+      }
+
+      await User.updateOne(
+        { _id: req.body.userId },
+        {
+          $set: {
+            fullname: req.body.inputs.fullname,
+            phone: phoneNumber,
+          },
+        }
+      );
+
+      const getAddress = await Address.findOne({
+        user_id: mongoose.Types.ObjectId(req.body.userId),
       });
 
       const now = new Date();
@@ -56,15 +86,15 @@ const paypalController = {
         voucher = await DiscountCode.findOne({
           coupon_code: req.body.codeCoupon,
         });
-        if (voucher.discount_type === "percentage") {
-          const discount = voucher.discount_amount / 100;
-          totalPriceOrder = parseFloat(req.body.totalPrice) * (1 - discount); // tính giá tiền đã giảm giá
-          totalPriceOrder = totalPriceOrder.toFixed(2);
-        } else {
-          const discount = voucher.discount_amount;
-          totalPriceOrder = parseFloat(req.body.totalPrice) - discount; // tính giá tiền đã giảm giá
-          totalPriceOrder = totalPriceOrder.toFixed(2);
-        }
+        // if (voucher.discount_type === "percentage") {
+        //   const discount = voucher.discount_amount / 100;
+        //   totalPriceOrder = parseFloat(req.body.totalPrice) * (1 - discount); // tính giá tiền đã giảm giá
+        //   totalPriceOrder = totalPriceOrder.toFixed(2);
+        // } else {
+        //   const discount = voucher.discount_amount;
+        //   totalPriceOrder = parseFloat(req.body.totalPrice) - discount; // tính giá tiền đã giảm giá
+        //   totalPriceOrder = totalPriceOrder.toFixed(2);
+        // }
 
         if (voucher.type_user === "people") {
           const addUser = await User.findOne({ _id: req.body.userId })
@@ -74,11 +104,9 @@ const paypalController = {
           await voucher.save();
         } else {
           voucher.is_redeemed = true;
-          // voucher.is_single_use = true;
           await voucher.save();
         }
       }
-
       const newOrder = new Order({
         userId: req.body.userId,
         products: products,
@@ -87,30 +115,14 @@ const paypalController = {
         expireAt: expireAt, // set giá trị của expireAt
         status: "pending", // status ban đầu là "pending"
         cancelAt: null,
+        transportFee: req.body.totalPriceDelivery,
       });
 
-      let phoneNumber = req.body.inputs.phone;
-      const phoneRegex = /^0\d{9}$/;
-      if (phoneRegex.test(phoneNumber)) {
-        console.log("Số điện thoại hợp lệ");
-        if (phoneNumber.startsWith("0")) {
-          phoneNumber = "84" + phoneNumber.substring(1);
-        }
-      } else {
-        console.log("Số điện thoại không hợp lệ");
-        res.status(200).json("Số điện thoại không hợp lệ!");
+      if (voucher) {
+        // kiểm tra xem có voucher hay không
+        newOrder.descCoupon = voucher.descCoupon;
+        newOrder.amountCoupon = voucher.amountCoupon;
       }
-
-      await User.updateOne(
-        { _id: req.body.userId },
-        {
-          $set: {
-            fullname: req.body.inputs.fullname,
-            // phone: req.body.inputs.phone,
-            phone: phoneNumber,
-          },
-        }
-      );
 
       const saveOrder = await newOrder.save();
       const orderId = saveOrder._id;
@@ -131,10 +143,23 @@ const paypalController = {
       let total = 0.0;
       for (let i = 0; i < CartList.length; i++) {
         const { product_id, quantity } = CartList[i];
-        const product = await Product.findOne({ _id: product_id }).lean();
-        let priceProduct = moneyUSAChange(product.price);
+        const product = await Product.findOne({ _id: product_id }).populate(
+          "discountProduct_id"
+        );
+        console.log("product", product);
+        let priceProduct;
+        if (product.discountProduct_id.discount_amount !== 0) {
+          priceProduct = moneyUSAChange(
+            product.price *
+              (1 - product.discountProduct_id.discount_amount / 100)
+          );
+        } else {
+          priceProduct = moneyUSAChange(product.price);
+        }
 
-        if (req.body.codeCoupon) {
+        console.log("priceProduct", priceProduct);
+
+        if (req.body.codeCoupon && req.body.codeCoupon === "Mã giảm giá") {
           if (voucher.discount_type === "percentage") {
             const discount = voucher.discount_amount / 100;
             priceProduct = priceProduct * (1 - discount); // tính giá tiền đã giảm giá
@@ -147,6 +172,7 @@ const paypalController = {
         }
 
         const priceItem = Number(priceProduct * quantity);
+        console.log("priceItem", priceItem);
 
         // Gọi các phương thức / function cần thiết để xử lý thông tin sản phẩm
         let tp = {
@@ -184,22 +210,41 @@ const paypalController = {
           // cancel_url: "http://localhost:3000/test12",
 
           return_url: "http://localhost:3000/dat-hang-thanh-cong",
-          cancel_url: "http://localhost:3000/dat-hang-that bai",
+          cancel_url: "http://localhost:3000/dat-hang-that-bai",
         },
         transactions: [
           {
             item_list: {
               items: items,
             },
+
+            shipping_address: {
+              line1: `${getAddress.address}, ${getAddress.ward}`,
+              state: `${getAddress.district}`,
+              city: `${getAddress.province}`,
+              country_code: "VN",
+              postal_code: "700000",
+            },
+
             amount: {
               currency: "USD",
-              total: total.toString(),
+              // total: total.toString(),
+              total: `${Number(total) + Number(priceDelivery)}`,
+              details: {
+                subtotal: total.toString(), // phí vận chuyển
+                shipping: priceDelivery.toString(),
+              },
             },
-            description: orderId.toString(),
-            // description: "fff",
+            // description: orderId.toString(),
+            description: "fff",
           },
         ],
       };
+
+      console.log(
+        "create_payment_json",
+        create_payment_json.transactions[0].amount
+      );
 
       paypal.payment.create(create_payment_json, function (error, payment) {
         if (error) {
