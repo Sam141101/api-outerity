@@ -48,6 +48,7 @@ const corsOptions = {
     process.env.PRODUCTION,
     "https://sell-vercel-admin.vercel.app",
     "https://page-user.vercel.app",
+    // 'https://page-user-l666tznx0-sam141101.vercel.app/'
   ],
   credentials: true,
 };

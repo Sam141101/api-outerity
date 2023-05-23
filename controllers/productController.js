@@ -225,11 +225,26 @@ const productController = {
   // Lấy ra 1 sản phẩm theo id
   getOneProduct: async (req, res) => {
     try {
+      console.time("myTimer");
       const product = await Product.findById(req.params.id)
         .populate("discountProduct_id", "discount_amount")
         .populate("sizes", "size inStock")
         .select("title img categories color price discountProduct_id sizes");
-      console.log(product);
+
+      // const findProduct = await Product.findOne({
+      //   _id: mongoose.Types.ObjectId(req.params.id),
+      // })
+      // .select("_id title desc img categories color price ")
+      // .lean();
+      // const findSizes = await Size.find({
+      //   product_id: mongoose.Types.ObjectId(req.params.id),
+      // }).lean();
+      // const findDiscount = await DiscountProduct.findOne({
+      //   product_id: mongoose.Types.ObjectId(req.params.id),
+      // }).lean();
+
+      console.timeEnd("myTimer");
+      // res.status(200).json("findProduct", findProduct);
       res.status(200).json(product);
     } catch (err) {
       res.status(500).json(err);
