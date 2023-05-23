@@ -45,16 +45,6 @@ const authController = {
   // gửi gmail đến gmail người dùng chọn để đăng kí
   confirmRegisterUser: async (req, res) => {
     try {
-      if (!req.body.email) {
-        return res.status(200).send({ message: "Bạn chưa nhập Email" });
-      }
-
-      var regex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-      const isCheckEmail = regex.test(req.body.email);
-      if (!isCheckEmail) {
-        return res.status(400).send({ message: "Email không hợp lệ!" });
-      }
-
       // kiểm tra xem gmail đã tồn tại hay chưa
       let user = await User.findOne({ email: req.body.email }).lean();
       console.log(user);
@@ -90,14 +80,14 @@ const authController = {
   verifyLink: async (req, res) => {
     try {
       console.log(req.params);
-      const user = await User.findOne({ _id: req.params.id });
+      const user = await User.findOne({ _id: req.params.id }).lean();
       if (!user)
         return res.status(400).send({ message: "Liên kết không hợp lệ" });
 
       const token = await Token.findOne({
         userId: user._id,
         token: req.params.token,
-      });
+      }).lean();
       if (!token)
         return res.status(400).send({ message: "Liên kết không hợp lệ" });
 
@@ -115,34 +105,6 @@ const authController = {
   //   Đăng kí
   register: async (req, res) => {
     try {
-      // xác thực
-      if (
-        !req.body.inputs.username ||
-        !req.body.inputs.fullname ||
-        !req.body.inputs.gender ||
-        !req.body.inputs.password ||
-        !req.body.inputs.confirmPassword
-      ) {
-        return res.status(200).json("Điền đầy đủ thông tin cần thiết.");
-      }
-
-      if (
-        req.body.inputs.username.length < 6 &&
-        req.body.inputs.username.trim()
-      ) {
-        return res
-          .status(200)
-          .json("Tên tài khoản ít hơn 6 kí tự hoặc có khoảng trắng.");
-      }
-
-      if (req.body.inputs.password.length < 6) {
-        return res.status(200).json("Mật khẩu không được ít hơn 6 kí tự.");
-      }
-
-      if (req.body.inputs.password !== req.body.inputs.confirmPassword) {
-        return res.status(200).json("Mật khẩu không trùng khớp.");
-      }
-
       // khi xác thực thành công
       const userCart = new Cart({});
       const savedUserCart = await userCart.save();
@@ -162,7 +124,8 @@ const authController = {
         { new: true }
       );
 
-      res.status(201).json(updateUser);
+      // res.status(201).json(updateUser);
+      res.status(201).json("Đăng ký tài khoản thành công.");
     } catch (err) {
       console.log(err);
       res.status(500).json(err);
@@ -172,18 +135,8 @@ const authController = {
   //  Người dùng quên mật khẩu
   forgotPassword: async (req, res) => {
     try {
-      if (!req.body.email) {
-        return res.status(200).send({ message: "Bạn chưa nhập Email" });
-      }
-
-      var regex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-      const isCheckEmail = regex.test(req.body.email);
-      if (!isCheckEmail) {
-        return res.status(400).send({ message: "Email không hợp lệ!" });
-      }
-
       // kiểm tra xem gmail đã tồn tại hay chưa
-      let user = await User.findOne({ email: req.body.email });
+      let user = await User.findOne({ email: req.body.email }).lean();
       if (!user) return res.status(409).send({ message: "User not Exist!" });
 
       const secret = process.env.JWT_SEC + user.password;
@@ -207,7 +160,7 @@ const authController = {
   // cho việc reset lại mật khẩu
   verifyLinkResetPassword: async (req, res) => {
     const { id, token } = req.params;
-    const user = await User.findOne({ _id: id });
+    const user = await User.findOne({ _id: id }).lean();
     if (!user) return res.status(400).send({ message: "User not exists" });
 
     const secret = process.env.JWT_SEC + user.password;
@@ -224,34 +177,44 @@ const authController = {
   //   Người dùng tạo mật khẩu mới
   newPassword: async (req, res) => {
     try {
-      if (!req.body.password || !req.body.passwordConfirm) {
-        return res.status(200).send("Chưa điền mật khẩu mới.");
-      }
+      // const user = await User.findOne({ _id: req.body.id });
+      // if (!user) return res.status(400).send({ message: "User not exists" });
 
-      if (req.body.password.length < 6) {
-        return res.status(200).send("Mật khẩu không được ít hơn 6 kí tự.");
-      }
+      // const salt = bcrypt.genSaltSync(10);
+      // // const encryptedPassword = await bcrypt.hash(password, salt);
+      // const hash = bcrypt.hashSync(req.body.password, salt);
+      // await User.updateOne(
+      //   {
+      //     _id: user._id,
+      //   },
+      //   {
+      //     $set: {
+      //       password: hash,
+      //     },
+      //   }
+      // );
 
-      if (req.body.password !== req.body.passwordConfirm) {
-        return res.status(200).send("Mật khẩu mới không trùng khớp.");
-      }
-
-      const user = await User.findOne({ _id: req.body.id });
-      if (!user) return res.status(400).send({ message: "User not exists" });
-
-      const salt = bcrypt.genSaltSync(10);
-      // const encryptedPassword = await bcrypt.hash(password, salt);
-      const hash = bcrypt.hashSync(req.body.password, salt);
-      await User.updateOne(
+      const updatedUser = await User.findOneAndUpdate(
         {
-          _id: user._id,
+          _id: req.body.id,
         },
         {
           $set: {
-            password: hash,
+            password: bcrypt.hashSync(
+              req.body.password,
+              bcrypt.genSaltSync(10)
+            ),
           },
-        }
+        },
+        { new: true }
       );
+
+      if (!updatedUser) {
+        return res.status(400).send({ message: "User not exists" });
+      }
+
+      return res.status(200).send({ message: "Password updated successfully" });
+
       res.status(200).send({ message: "Update success" });
     } catch (error) {
       res.status(500).send({ message: "Fail" });
@@ -295,18 +258,6 @@ const authController = {
   //   Đăng nhập vào website
   login: async (req, res) => {
     try {
-      // if (!req.body.password || !req.body.passwordConfirm) {
-      //   return res.status(200).send("Chưa điền mật khẩu mới.");
-      // }
-
-      // if (req.body.password.length < 6) {
-      //   return res.status(200).send("Mật khẩu không được ít hơn 6 kí tự.");
-      // }
-
-      // if (req.body.password !== req.body.passwordConfirm) {
-      //   return res.status(200).send("Mật khẩu mới không trùng khớp.");
-      // }
-
       const user = await User.findOne({ username: req.body.username });
       if (!user) return res.status(404).json("Không tìm thấy người dùng!");
 
@@ -422,14 +373,6 @@ const authController = {
         }
       );
 
-      // res.cookie("refreshToken", newRefreshToken, {
-      //   httpOnly: true,
-      //   secure: false,
-      //   path: "/",
-      //   sameSite: "strict",
-      //   withCredentials: true,
-      // });
-
       res.status(200).json({ token: newAccessToken1 });
     });
   },
@@ -449,117 +392,11 @@ const authController = {
         }
       );
 
-      // res.clearCookie("refreshToken");
-
-      // res.clearCookie("refreshToken", {
-      //   httpOnly: true,
-      //   secure: false,
-      //   path: "/",
-      //   sameSite: "strict",
-      //   withCredentials: true,
-      // });
       res.status(200).json("Logged Out");
     } catch (err) {
       console.log(err);
     }
   },
-
-  // Thử áp dụng refreshToken mới
-  //   Đăng nhập vào website
-  // login: async (req, res) => {
-  //   try {
-  //     // const { username, password } = req.body;
-
-  //     const user = await User.findOne({ username: req.body.username });
-  //     if (!user) return res.status(404).json("Không tìm thấy người dùng!");
-
-  //     const isPasswordCorrect = await bcrypt.compare(
-  //       req.body.password,
-  //       user.password
-  //     );
-  //     if (!isPasswordCorrect)
-  //       return res.status(400).json("Sai mật khẩu hoặc tài khoản!");
-
-  //     const token = generateAccessToken(user);
-  //     const refreshToken = generateRefreshToken(user);
-
-  //     res.cookie("refreshToken", refreshToken, {
-  //       // httpOnly: true,
-  //       // secure: false,
-  //       // path: "/",
-  //       // sameSite: "strict",
-  //       // withCredentials: true,
-
-  //       maxAge: 60 * 60 * 24,
-  //       secure: true,
-  //       sameSite: "strict",
-  //       path: "https://fri-api-pr-31.onrender.com/api",
-  //     });
-
-  //     const { img, password, isAdmin, ...otherDetails } = user._doc;
-  //     res
-  //       .status(200)
-  //       .json({ ...otherDetails, isAdmin, img, token, refreshToken });
-  //   } catch (err) {
-  //     res.status(500).json(err);
-  //   }
-  // },
-
-  // //  tải lại token ( REFRESH )
-  // refreshToken: async (req, res) => {
-  //   const authHeader = req.headers.token;
-  //   if (!authHeader) {
-  //     return res.status(403).json("You are not authenticated!");
-  //   }
-  //   const token = authHeader.split(" ")[1];
-  //   jwt.verify(token, process.env.RF_JWT_SEC, (err, user) => {
-  //     if (err) {
-  //       res.status(500).json(err);
-  //     }
-
-  //     // Tao new accessToken va refreshToken
-  //     const newAccessToken = generateAccessToken(user);
-  //     // const newRefreshToken = generateRefreshToken(user);
-  //     // refreshTokens.push(newRefreshToken);
-  //     // res.cookie("refreshToken", newRefreshToken, {
-  //     //   httpOnly: true,
-  //     //   secure: false,
-  //     //   path: "/",
-  //     //   sameSite: "strict",
-  //     // });
-
-  //     res.status(200).json({ token: newAccessToken });
-  //   });
-
-  //   // res.status(200).json(token);
-
-  //   // Lay token tu user
-  //   // const refreshToken = req.cookies.refreshToken;
-  //   // if (!refreshToken)
-  //   //   return res.status(401).json("You are not authenticated!");
-  //   // if (!refreshTokens.includes(refreshToken))
-  //   //   return res.status(401).json("Refresh token is not valid");
-  //   // jwt.verify(refreshToken, process.env.RF_JWT_SEC, (err, user) => {
-  //   //   if (err) {
-  //   //     res.status(500).json(err);
-  //   //   }
-
-  //   //   refreshTokens = refreshTokens.filter((token) => token !== refreshToken);
-
-  //   //   // Tao new accessToken va refreshToken
-  //   //   const newAccessToken = generateAccessToken(user);
-  //   //   const newRefreshToken = generateRefreshToken(user);
-  //   //   refreshTokens.push(newRefreshToken);
-  //   //   res.cookie("refreshToken", newRefreshToken, {
-  //   //     httpOnly: true,
-  //   //     secure: false,
-  //   //     path: "/",
-  //   //     sameSite: "strict",
-  //   //   });
-
-  //   //   res.status(200).json({ token: newAccessToken });
-  //   // });
-  // },
 };
 
 module.exports = authController;
