@@ -473,6 +473,44 @@ const productController = {
       res.status(500).json(err);
     }
   },
+
+  getAllProductHome: async (req, res) => {
+    const sort = {
+      createdAt: -1,
+    };
+
+    try {
+      let products;
+
+      products = await Product.find({
+        categories: {
+          $in: [req.query.category],
+        },
+      })
+        .sort(sort)
+        .limit(12)
+        .populate("discountProduct_id", "discount_amount")
+        .populate("sizes", "size inStock")
+        .select("title img price discountProduct_id sizes");
+
+      // trước đó
+
+      // const pagi = {
+      //   page: page,
+      //   totalRows: totalProduct,
+      //   limit: pageSize,
+      // };
+
+      // const results = {
+      //   resultProducts: products,
+      //   pagi: pagi,
+      // };
+
+      res.status(200).json(products);
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  },
 };
 
 module.exports = productController;

@@ -11,67 +11,6 @@ const searchController = {
         return str.toUpperCase();
       }
 
-      //   // $or: [{ title: { $regex: req.query.search } }],
-
-      //   $or: [
-      //     {
-      //       title: {
-      //         $regex: req.query.search,
-      //         // $regex: `/\\s+${req.query.search}\s+/i`,
-      //         // $options: "i",
-      //       },
-      //     },
-      //     {
-      //       title: {
-      //         // $regex: `/\\s+${toUpperCase(req.query.search)}\s+/i`,
-      //         $regex: toUpperCase(req.query.search),
-      //         // $options: "i",
-      //       },
-      //     },
-      //     // { categories: { $regex: toUpperCase(req.query.search) } },
-      //   ],
-
-      //   // $or: [{ title: { $regex: req.query.search } }],
-      //   // categories: req.query.search,
-      // }).limit(5);
-
-      // console.log(data);
-
-      // console.log(search);
-
-      const search = await Product.aggregate([
-        {
-          $search: {
-            index: "custom1",
-            // index: "custom2",
-
-            compound: {
-              should: [
-                {
-                  autocomplete: {
-                    path: "title",
-                    query: req.query.search,
-                    // "score": { "boost": { "value": 3}}
-                  },
-                },
-
-                {
-                  text: {
-                    path: "title",
-                    query: req.query.search,
-                    fuzzy: { maxEdits: 1 },
-                  },
-                },
-              ],
-              minimumShouldMatch: 1,
-            },
-          },
-        },
-        {
-          $limit: 5,
-        },
-      ]);
-
       // const search = await Product.aggregate([
       //   {
       //     $search: {
@@ -97,14 +36,106 @@ const searchController = {
       //     },
       //   },
       //   {
-      //     $match: {
-      //       categories: req.query.category,
+      //     $lookup: {
+      //       from: "discountproducts",
+      //       localField: "discountProduct_id",
+      //       foreignField: "_id",
+      //       as: "discountProducts",
       //     },
       //   },
       //   {
       //     $limit: 5,
       //   },
-      // ]);
+      // ]).project({
+      //   _id: 1,
+      //   title: 1,
+      //   categories: 1,
+      //   img: 1,
+      //   color: 1,
+      //   imageUrl: 1,
+      //   price: 1,
+      //   discountProduct_id: 1,
+      //   discount_amount: {
+      //     $arrayElemAt: ["$discountProducts.discount_amount", 0],
+      //   },
+      // });
+
+      const search = await Product.aggregate([
+        {
+          $search: {
+            index: "custom2",
+            compound: {
+              should: [
+                {
+                  autocomplete: {
+                    path: "title",
+                    query: req.query.search,
+                  },
+                },
+                {
+                  text: {
+                    path: "title",
+                    query: req.query.search,
+                    fuzzy: { maxEdits: 1 },
+                  },
+                },
+                {
+                  text: {
+                    path: "color",
+                    query: req.query.search,
+                    fuzzy: { maxEdits: 1 },
+                  },
+                },
+                {
+                  $unwind: {
+                    path: "$categories",
+                    preserveNullAndEmptyArrays: true,
+                  },
+                },
+                {
+                  text: {
+                    path: "categories",
+                    query: req.query.search,
+                    fuzzy: { maxEdits: 1 },
+                  },
+                },
+              ],
+              minimumShouldMatch: 1,
+            },
+          },
+        },
+        {
+          $lookup: {
+            from: "discountproducts",
+            localField: "discountProduct_id",
+            foreignField: "_id",
+            as: "discountProducts",
+          },
+        },
+        {
+          $project: {
+            title: 1,
+            imageUrl: "$img",
+            categories: 1,
+            color: 1,
+            price: 1,
+            discountProduct_id: 1,
+            discount_amount: {
+              $arrayElemAt: ["$discountProducts.discount_amount", 0],
+            },
+          },
+        },
+        {
+          $addFields: {
+            discount_amount: { $ifNull: ["$discount_amount", 0] },
+          },
+        },
+        {
+          $limit: 5,
+        },
+      ]);
+
+      console.log("search", search);
 
       res.status(200).json(search);
     } catch (err) {

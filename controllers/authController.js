@@ -315,11 +315,9 @@ const authController = {
 
   // //  tải lại token ( REFRESH )
   refreshToken: async (req, res) => {
-    // Lay token tu user
     // const refreshToken = req.cookies.refreshToken;
 
     // console.log(req.params.id);
-
     const findRefreshTokenData = await RefreshToken.findOne({
       userId: mongoose.Types.ObjectId(req.params.id),
     }).lean();
@@ -329,31 +327,15 @@ const authController = {
 
     let refreshToken = findRefreshTokenData.refreshToken;
 
-    // console.log("refreshToken", refreshToken);
-
-    // if (!refreshToken)
-    //   return res.status(401).json("You are not authenticated!");
-
-    // const findRefreshToken = await RefreshToken.findOne({
-    //   refreshToken: refreshToken,
-    // }).lean();
-    // if (!findRefreshToken)
-    //   return res.status(401).json("Refresh token is not valid");
-
     jwt.verify(refreshToken, process.env.RF_JWT_SEC, async (err, user) => {
       if (err) {
         res.status(500).json(err);
       }
 
-      // console.log("userVerify", user);
-
       // Tao new accessToken va
       const userFind = await User.findOne({
         _id: mongoose.Types.ObjectId(user.id),
-      });
-
-      // console.log("userFind", userFind);
-      // .lean();
+      }).lean();
 
       const newAccessToken1 = generateAccessToken(userFind);
       const newRefreshToken = generateRefreshToken(userFind);
