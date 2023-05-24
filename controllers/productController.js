@@ -475,6 +475,7 @@ const productController = {
   },
 
   getAllProductHome: async (req, res) => {
+    console.log("có");
     const sort = {
       createdAt: -1,
     };
@@ -482,11 +483,7 @@ const productController = {
     try {
       let products;
 
-      products = await Product.find({
-        categories: {
-          $in: [req.query.category],
-        },
-      })
+      products = await Product.find()
         .sort(sort)
         .limit(12)
         .populate("discountProduct_id", "discount_amount")
