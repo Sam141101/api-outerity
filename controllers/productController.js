@@ -10,33 +10,6 @@ const productController = {
   // Tạo sản phẩm
   createProduct: async (req, res) => {
     try {
-      // if (
-      //   !req.body.title ||
-      //   !req.body.desc ||
-      //   !req.body.img ||
-      //   !req.body.categories ||
-      //   !req.body.color ||
-      //   !req.body.sizeS ||
-      //   !req.body.sizeM ||
-      //   !req.body.sizeL
-      // ) {
-      //   res.status(200).json("Vui lòng điền đẩy đủ các thông tin");
-      // }
-
-      const requiredFields = [
-        "title",
-        "desc",
-        "img",
-        "categories",
-        "color",
-        "sizeS",
-        "sizeM",
-        "sizeL",
-      ];
-      if (!requiredFields.every((field) => req.body[field])) {
-        return res.status(200).json("Vui lòng điền đẩy đủ các thông tin");
-      }
-
       const newProduct = new Product({
         title: req.body.title,
         desc: req.body.desc,
@@ -127,32 +100,6 @@ const productController = {
         }
       }
 
-      // let findProduct = await Product.findOne({ _id: req.params.id }).lean();
-
-      // if (req.body.title) {
-      //   findProduct.title = req.body.title;
-      // }
-
-      // if (req.body.desc) {
-      //   findProduct.desc = req.body.desc;
-      // }
-
-      // if (req.body.img) {
-      //   findProduct.img = req.body.img;
-      // }
-
-      // if (req.body.color) {
-      //   findProduct.color = req.body.color;
-      // }
-
-      // if (req.body.price) {
-      //   findProduct.price = req.body.price;
-      // }
-
-      // if (req.body.categories) {
-      //   findProduct.categories = req.body.categories;
-      // }
-
       if (req.body.discount) {
         const findDiscountProduct = await DiscountProduct.findOne({
           product_id: mongoose.Types.ObjectId(req.params.id),
@@ -231,20 +178,7 @@ const productController = {
         .populate("sizes", "size inStock")
         .select("title img categories color price discountProduct_id sizes");
 
-      // const findProduct = await Product.findOne({
-      //   _id: mongoose.Types.ObjectId(req.params.id),
-      // })
-      // .select("_id title desc img categories color price ")
-      // .lean();
-      // const findSizes = await Size.find({
-      //   product_id: mongoose.Types.ObjectId(req.params.id),
-      // }).lean();
-      // const findDiscount = await DiscountProduct.findOne({
-      //   product_id: mongoose.Types.ObjectId(req.params.id),
-      // }).lean();
-
       console.timeEnd("myTimer");
-      // res.status(200).json("findProduct", findProduct);
       res.status(200).json(product);
     } catch (err) {
       res.status(500).json(err);
@@ -336,16 +270,13 @@ const productController = {
 
           .populate("discountProduct_id", "discount_amount")
           .populate("sizes", "size inStock")
-          // .populate({
-          //   path: "discountProduct_id",
-          // })
           .select("title img price discountProduct_id sizes");
 
-        totalProduct = await Product.find({
+        totalProduct = await Product.countDocuments({
           categories: {
             $in: [req.query.category],
           },
-        }).lean();
+        });
       } else {
         products = await Product.find()
           .sort(sort)
@@ -353,57 +284,15 @@ const productController = {
           .limit(pageSize)
           .populate("discountProduct_id", "discount_amount")
           .populate("sizes", "size inStock")
-          // .populate({
-          //   path: "discountProduct_id",
-          // })
           .select("title img price discountProduct_id sizes");
 
-        totalProduct = await Product.find().lean();
+        totalProduct = await Product.countDocuments();
       }
-
-      // thử nghiệm
-      // if (req.query.new) {
-      //   products = await Product.find().sort({ createdAt: -1 }).limit(1);
-      // } else if (req.query.category !== "undefined") {
-      //   products = await Product.find({
-      //     categories: {
-      //       $in: [req.query.category],
-      //     },
-      //   })
-      //     .sort(sort)
-      //     .skip(quanti)
-      //     .limit(pageSize)
-      //     .select("title img price discountProduct_id sizes").lean();
-
-      //     sizes = await Size.find({
-      //       product_id
-      //     })
-
-      //   totalProduct = await Product.find({
-      //     categories: {
-      //       $in: [req.query.category],
-      //     },
-      //   }).lean();
-      // } else {
-      //   products = await Product.find()
-      //     .sort(sort)
-      //     .skip(quanti)
-      //     .limit(pageSize)
-      //     .populate("discountProduct_id", "discount_amount")
-      //     .populate("sizes", "size inStock")
-      //     // .populate({
-      //     //   path: "discountProduct_id",
-      //     // })
-      //     .select("title img price discountProduct_id sizes");
-
-      //   totalProduct = await Product.find().lean();
-      // }
-
-      // console.log("products", products);
+      console.log("totalProduct", totalProduct);
 
       const pagi = {
         page: page,
-        totalRows: totalProduct.length,
+        totalRows: totalProduct,
         limit: pageSize,
       };
 

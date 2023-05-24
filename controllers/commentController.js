@@ -21,15 +21,6 @@ const commentController = {
 
       const savedComment = await newComment.save();
 
-      const checkExistComment = await Comment.findOne({
-        _id: savedComment._id,
-      }).lean();
-
-      if (!checkExistComment) {
-        console.log("not found");
-        return;
-      }
-
       const updatedOrder = await Order.findOneAndUpdate(
         {
           // userId: req.body.user_id,

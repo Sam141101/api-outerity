@@ -115,43 +115,44 @@ const searchController = {
 
   //   Lấy ra tất cả sản phẩm tìm kiếm
   searchAll: async (req, res) => {
-    let page = req.query.page;
-    page = parseInt(page);
-    if (page < 1) {
-      page = 1;
-    }
-    let quanti = (page - 1) * PAGE_SIZE;
-
-    const qNew = req.query.new;
-    const qCategory = req.query.category;
     try {
-      let products;
+      const searchQuery = req.query.search;
+      const decodedQuery = decodeURIComponent(searchQuery).toLowerCase();
 
-      if (qNew) {
-        products = await Product.find().sort({ createdAt: -1 }).limit(1);
-      } else if (qCategory) {
-        products = await Product.find({
-          categories: {
-            $in: [qCategory],
-          },
-        })
-          .skip(quanti)
-          .limit(PAGE_SIZE);
-      } else {
-        products = await Product.find();
+      let page = req.query.page;
+      const pageSize = parseInt(req.query.limit);
+      page = parseInt(page);
+      if (page < 1) {
+        page = 1;
       }
+      let quanti = (page - 1) * pageSize;
 
-      const total = await Product.find({
-        categories: {
-          $in: [qCategory],
-        },
+      const products = await Product.find({
+        $or: [
+          { title: { $regex: decodedQuery, $options: "i" } },
+          { categories: { $regex: decodedQuery, $options: "i" } },
+          { color: { $regex: decodedQuery, $options: "i" } },
+        ],
+      })
+        .skip(quanti)
+        .limit(pageSize)
+        .populate("discountProduct_id", "discount_amount")
+        .populate("sizes", "size inStock")
+        .select("title img price discountProduct_id sizes");
+
+      let totalProduct = await Product.countDocuments({
+        $or: [
+          { title: { $regex: decodedQuery, $options: "i" } },
+          { categories: { $regex: decodedQuery, $options: "i" } },
+          { color: { $regex: decodedQuery, $options: "i" } },
+        ],
       });
 
-      const totalProduct = total.length;
-
+      // console.log("products", products);
       const pagi = {
         page: page,
         totalRows: totalProduct,
+        limit: pageSize,
       };
 
       const results = {
