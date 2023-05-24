@@ -127,12 +127,7 @@ const cartController = {
   addProductToCart: async (req, res) => {
     try {
       console.time("myTimer");
-
-      console.log("req.body", req.body);
-      // let cart_update;
-      // Tìm tới user trong mảng user
       const user = await User.findOne({ _id: req.body.userId }).lean();
-      // Tìm tới user trong mảng user
       let cart = await Cart.findOne({ _id: user.cart_id._id }).populate({
         path: "list_product",
       });
@@ -237,7 +232,7 @@ const cartController = {
         path: "product_id",
       });
 
-      const getCart = await Cart.findOne({ _id: getQuanti.cart_id });
+      const getCart = await Cart.findOne({ _id: getQuanti.cart_id }).lean();
       let currentTotalPrice = getCart.total_price;
 
       // lấy tiền của sản phẩm update
@@ -285,7 +280,7 @@ const cartController = {
   deleteProductInCart: async (req, res) => {
     try {
       // Lấy thông tin sản phẩm cần xoá và id giỏ hàng liên kết với sản phẩm
-      const getProduct = await ListProduct.findById(req.params.id);
+      const getProduct = await ListProduct.findById(req.params.id).lean();
       const cart_id = getProduct.cart_id;
 
       // Cập nhật giỏ hàng bằng cách xoá sản phẩm ra khỏi danh sách sản phẩm và tính toán lại tổng giá trị và số lượng sản phẩm mới sau khi xoá
@@ -318,11 +313,15 @@ const cartController = {
       // const rf = req.cookies.refreshToken;
       // console.log("token-cookie", rf);
 
-      const user = await User.findOne({ _id: req.params.id }).lean();
-      const cart = await Cart.findOne({ _id: user.cart_id }).lean();
+      // const user = await User.findOne({ _id: req.params.id }).lean();
+      // const cart = await Cart.findOne({ _id: user.cart_id }).lean();
 
-      const total_price = cart.total_price;
-      const total_quanti = cart.total_quantity;
+      const user = await User.findOne({ _id: req.params.id }).populate(
+        "cart_id"
+      );
+
+      const total_price = user.cart_id.total_price;
+      const total_quanti = user.cart_id.total_quantity;
       // const getCart = await ListProduct.find({
       //   cart_id: cart._id,
       // }).populate({
@@ -330,7 +329,7 @@ const cartController = {
       // });
 
       const getCart = await ListProduct.find({
-        cart_id: cart._id,
+        cart_id: user.cart_id._id,
       }).populate({
         path: "product_id",
         populate: { path: "discountProduct_id" },
@@ -352,7 +351,7 @@ const cartController = {
   //  Lấy ra tất cả sản phẩm
   getAllCart: async (req, res) => {
     try {
-      const carts = await Cart.find();
+      const carts = await Cart.find().lean();
       res.status(200).json(carts);
     } catch (err) {
       res.status(500).json(err);
