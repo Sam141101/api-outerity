@@ -48,4 +48,7 @@ router.get(
 router.get("/size/:id", productController.createSize);
 router.get("/add-size/:id", productController.addSize);
 
+// làm cho riêng trang home
+router.get("/home/", productController.getAllProductHome);
+
 module.exports = router;
