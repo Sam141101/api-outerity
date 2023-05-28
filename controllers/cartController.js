@@ -225,49 +225,108 @@ const cartController = {
 
   //  Cập nhật giỏ hàng
   updateCart: async (req, res) => {
+    // try {
+    //   const getQuanti = await ListProduct.findOne({
+    //     _id: req.params.id,
+    //   }).populate({
+    //     path: "product_id",
+    //     populate: { path: "discountProduct_id" },
+    //   });
+
+    //   const getCart = await Cart.findOne({ _id: getQuanti.cart_id }).lean();
+    //   let currentTotalPrice = getCart.total_price;
+
+    //   // lấy tiền của sản phẩm update
+    //   let price = getQuanti.product_id.price;
+    //   if (getQuanti.product_id.discountProduct_id.discount_amount > 0) {
+    //     price =
+    //       getQuanti.product_id.price *
+    //       (1 -
+    //         Number(getQuanti.product_id.discountProduct_id.discount_amount) /
+    //           100);
+    //   } else {
+    //     price = getQuanti.product_id.price;
+    //   }
+
+    //   let currentQuanti = getQuanti.quantity;
+    //   let currentPrice = getQuanti.price;
+
+    //   if (req.body.condition == "add") {
+    //     currentQuanti += 1;
+    //     currentPrice = price * currentQuanti;
+    //     currentTotalPrice += price;
+    //     console.log("cộng");
+    //   } else if (req.body.condition == "minus") {
+    //     currentQuanti -= 1;
+    //     currentPrice = price * currentQuanti;
+    //     currentTotalPrice -= price;
+    //     console.log("trừ");
+    //   }
+
+    //   const updatedCart = await ListProduct.updateOne(
+    //     { _id: req.params.id },
+    //     {
+    //       $set: { quantity: currentQuanti, price: currentPrice },
+    //     },
+    //     { new: true }
+    //   );
+
+    //   await Cart.updateOne(
+    //     { _id: getQuanti.cart_id },
+    //     {
+    //       $set: { total_price: currentTotalPrice },
+    //     },
+    //     { new: true }
+    //   );
+
     try {
       const getQuanti = await ListProduct.findOne({
         _id: req.params.id,
       }).populate({
         path: "product_id",
+        populate: { path: "discountProduct_id" },
       });
 
-      const getCart = await Cart.findOne({ _id: getQuanti.cart_id }).lean();
-      let currentTotalPrice = getCart.total_price;
+      // console.log("getQuanti", getQuanti);
 
-      // lấy tiền của sản phẩm update
-      const price = getQuanti.product_id.price;
+      let { quantity: currentQuanti } = getQuanti;
+      const { product_id } = getQuanti;
+      let { price: currentPrice } = getQuanti;
 
-      let currentQuanti = getQuanti.quantity;
-      let currentPrice = getQuanti.price;
+      // console.log("{----}", currentQuanti, product_id, currentPrice);
 
-      if (req.body.condition == "add") {
-        currentQuanti += 1;
-        currentPrice = price * currentQuanti;
-        currentTotalPrice += price;
-        console.log("cộng");
-      } else if (req.body.condition == "minus") {
-        currentQuanti -= 1;
-        currentPrice = price * currentQuanti;
-        currentTotalPrice -= price;
-        console.log("trừ");
-      }
+      // Get the price of the product based on discount
+      let price =
+        product_id.discountProduct_id.discount_amount > 0
+          ? product_id.price *
+            (1 - Number(product_id.discountProduct_id.discount_amount) / 100)
+          : product_id.price;
 
-      const updatedCart = await ListProduct.updateOne(
+      // console.log("price", price);
+
+      req.body.condition == "add" ? (currentQuanti += 1) : (currentQuanti -= 1);
+      currentPrice = price * currentQuanti;
+
+      // console.log("currentPrice", currentPrice);
+
+      await ListProduct.updateOne(
         { _id: req.params.id },
         {
-          $set: { quantity: currentQuanti, price: currentPrice },
-        },
-        { new: true }
+          $set: {
+            quantity: currentQuanti,
+            price: currentPrice,
+          },
+        }
       );
 
-      await Cart.updateOne(
-        { _id: getQuanti.cart_id },
-        {
-          $set: { total_price: currentTotalPrice },
-        },
-        { new: true }
-      );
+      const getCart = await Cart.findOne({ _id: getQuanti.cart_id });
+      let { total_price: currentTotalPrice } = getCart;
+      currentTotalPrice += price * (req.body.condition == "add" ? 1 : -1);
+
+      getCart.total_price = currentTotalPrice;
+      await getCart.save();
+
+      // console.log("getCart", getCart);
 
       // res.status(200).json(updatedCart);
       res.status(200).json("Cập nhật thành công");
@@ -279,27 +338,39 @@ const cartController = {
   // Xoá sản phẩm trong giỏ hàng
   deleteProductInCart: async (req, res) => {
     try {
-      // Lấy thông tin sản phẩm cần xoá và id giỏ hàng liên kết với sản phẩm
-      const getProduct = await ListProduct.findById(req.params.id).lean();
-      const cart_id = getProduct.cart_id;
+      // const getProduct = await ListProduct.findById(req.params.id).lean();
+      // const cart_id = getProduct.cart_id;
 
-      // Cập nhật giỏ hàng bằng cách xoá sản phẩm ra khỏi danh sách sản phẩm và tính toán lại tổng giá trị và số lượng sản phẩm mới sau khi xoá
-      const update = {
-        $pull: { list_product: req.params.id },
-        $inc: { total_price: -getProduct.price, total_quantity: -1 },
-      };
-      const options = { new: true }; // Trả về giỏ hàng được cập nhật sau khi thay đổi
+      // const update = {
+      //   $pull: { list_product: req.params.id },
+      //   $inc: { total_price: -getProduct.price, total_quantity: -1 },
+      // };
+      // const options = { new: true }; // Trả về giỏ hàng được cập nhật sau khi thay đổi
 
+      // const updatedCart = await Cart.findOneAndUpdate(
+      //   { _id: cart_id },
+      //   update,
+      //   options
+      // ).populate("list_product");
+
+      // await ListProduct.deleteOne({ _id: req.params.id });
+
+      // Lấy thông tin sản phẩm cần xoá
+      const getProduct = await ListProduct.findOne({
+        _id: req.params.id,
+      }).lean();
+
+      // Cập nhật giỏ hàng bằng cách xoá sản phẩm ra khỏi danh sách sản phẩm
       const updatedCart = await Cart.findOneAndUpdate(
-        { _id: cart_id },
-        update,
-        options
-      ).populate("list_product");
+        { _id: getProduct.cart_id },
+        { $pull: { list_product: req.params.id } },
+        { new: true }
+      ).populate({ path: "list_product", model: "ListProduct" });
 
       // xoá ListProduct với _id là req.params.id
       await ListProduct.deleteOne({ _id: req.params.id });
 
-      // Trả về giỏ hàng mới sau khi xoá sản phẩm
+      console.log("thanhf cong");
       res.status(200).json(updatedCart);
       // res.status(200).json("Cart has been deleted...");
     } catch (err) {
@@ -310,23 +381,12 @@ const cartController = {
   // Lấy ra 1 giỏ hàng
   getUserCart: async (req, res) => {
     try {
-      // const rf = req.cookies.refreshToken;
-      // console.log("token-cookie", rf);
-
-      // const user = await User.findOne({ _id: req.params.id }).lean();
-      // const cart = await Cart.findOne({ _id: user.cart_id }).lean();
-
       const user = await User.findOne({ _id: req.params.id }).populate(
         "cart_id"
       );
 
       const total_price = user.cart_id.total_price;
       const total_quanti = user.cart_id.total_quantity;
-      // const getCart = await ListProduct.find({
-      //   cart_id: cart._id,
-      // }).populate({
-      //   path: "product_id",
-      // });
 
       const getCart = await ListProduct.find({
         cart_id: user.cart_id._id,

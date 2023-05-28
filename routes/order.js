@@ -114,4 +114,11 @@ router.get(
   orderController.getAdminAllOrderAmountStatus
 );
 
+//GET USER STATS
+router.get(
+  "/stats",
+  middlewareController.verifyTokenAndAdmin,
+  orderController.orderStats
+);
+
 module.exports = router;

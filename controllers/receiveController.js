@@ -105,23 +105,40 @@ const receiveController = {
 
       await newShipping.save();
 
-      const order = await Order.findOne({ _id: orderId.toString() }).lean();
+      // const order = await Order.findOne({ _id: orderId.toString() }).lean();
 
-      if (!order) {
-        console.log("not found");
-        return;
-      }
+      // if (!order) {
+      //   console.log("not found");
+      //   return;
+      // }
 
       const cartIds = req.body.cart.map((cart) => cart.cart_id);
-      const carts = await Cart.find({ _id: { $in: cartIds } });
 
-      for (const cart of carts) {
-        await ListProduct.deleteMany({ _id: { $in: cart.list_product } });
-        cart.list_product = [];
-        cart.total_quantity = 0;
-        cart.total_price = 0;
-        await cart.save();
-      }
+      const cart_id = cartIds[0];
+
+      // const carts = await Cart.find({ _id: { $in: cartIds } });
+
+      // for (const cart of carts) {
+      //   await ListProduct.deleteMany({ _id: { $in: cart.list_product } });
+      //   cart.list_product = [];
+      //   cart.total_quantity = 0;
+      //   cart.total_price = 0;
+      //   await cart.save();
+      // }
+
+      await ListProduct.deleteMany({ cart_id: cart_id });
+
+      const updatedCart = await Cart.findOneAndUpdate(
+        { _id: cart_id },
+        {
+          $set: {
+            list_product: [],
+            total_quantity: 0,
+            total_price: 0,
+          },
+        },
+        { new: true }
+      );
 
       res.status(200).json("success");
     } catch (err) {

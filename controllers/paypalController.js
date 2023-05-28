@@ -336,15 +336,31 @@ const paypalController = {
             );
 
             // lấy cart ra
-            const cart = await Cart.findOne({ _id: cartId });
-            for (let i = 0; i < cart.list_product.length; i++) {
-              const list_pd = await ListProduct.findOne({
-                _id: cart.list_product[i],
-              });
+            // const cart = await Cart.findOne({ _id: cartId });
+            // for (let i = 0; i < cart.list_product.length; i++) {
+            //   const list_pd = await ListProduct.findOne({
+            //     _id: cart.list_product[i],
+            //   });
 
-              list_pd.remove();
-            }
-            await Cart.updateOne(
+            //   list_pd.remove();
+            // }
+            // await Cart.updateOne(
+            //   { _id: cartId },
+            //   {
+            //     $set: {
+            //       list_product: [],
+            //       total_quantity: 0,
+            //       total_price: 0,
+            //     },
+            //   },
+            //   { new: true }
+            // );
+
+            // Xóa danh sách sản phẩm trong giỏ hàng
+            await ListProduct.deleteMany({ cart_id: cartId });
+
+            // Cập nhật giỏ hàng
+            const updatedCart = await Cart.findOneAndUpdate(
               { _id: cartId },
               {
                 $set: {
@@ -369,14 +385,17 @@ const paypalController = {
   //   cancel
   paymentCancel: async (req, res) => {
     const orderId = req.query.orderId;
-    const shipping = await Shipping.findOne({
-      order_id: orderId,
-    });
-    shipping.remove();
-    const order = await Order.findOne({
-      _id: orderId,
-    });
-    order.remove();
+    // const shipping = await Shipping.findOne({
+    //   order_id: orderId,
+    // });
+    // shipping.remove();
+    // const order = await Order.findOne({
+    //   _id: orderId,
+    // });
+    // order.remove();
+
+    await Shipping.deleteOne({ order_id: orderId });
+    await Order.findOneAndRemove({ _id: orderId });
 
     res.json("Thanh toán thất bại");
   },

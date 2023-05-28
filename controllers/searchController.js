@@ -4,6 +4,7 @@ const searchController = {
   // Lấy ra 5 sản phẩm tìm kiếm
   search: async (req, res) => {
     try {
+      console.log("vô search", req.query.search);
       if (!req.query.search) {
         return;
       }
@@ -11,59 +12,10 @@ const searchController = {
         return str.toUpperCase();
       }
 
-      // const search = await Product.aggregate([
-      //   {
-      //     $search: {
-      //       index: "custom1",
-      //       compound: {
-      //         should: [
-      //           {
-      //             autocomplete: {
-      //               path: "title",
-      //               query: req.query.search,
-      //             },
-      //           },
-      //           {
-      //             text: {
-      //               path: "title",
-      //               query: req.query.search,
-      //               fuzzy: { maxEdits: 1 },
-      //             },
-      //           },
-      //         ],
-      //         minimumShouldMatch: 1,
-      //       },
-      //     },
-      //   },
-      //   {
-      //     $lookup: {
-      //       from: "discountproducts",
-      //       localField: "discountProduct_id",
-      //       foreignField: "_id",
-      //       as: "discountProducts",
-      //     },
-      //   },
-      //   {
-      //     $limit: 5,
-      //   },
-      // ]).project({
-      //   _id: 1,
-      //   title: 1,
-      //   categories: 1,
-      //   img: 1,
-      //   color: 1,
-      //   imageUrl: 1,
-      //   price: 1,
-      //   discountProduct_id: 1,
-      //   discount_amount: {
-      //     $arrayElemAt: ["$discountProducts.discount_amount", 0],
-      //   },
-      // });
-
       const search = await Product.aggregate([
         {
           $search: {
-            index: "custom2",
+            index: "custom1",
             compound: {
               should: [
                 {
@@ -75,26 +27,6 @@ const searchController = {
                 {
                   text: {
                     path: "title",
-                    query: req.query.search,
-                    fuzzy: { maxEdits: 1 },
-                  },
-                },
-                {
-                  text: {
-                    path: "color",
-                    query: req.query.search,
-                    fuzzy: { maxEdits: 1 },
-                  },
-                },
-                {
-                  $unwind: {
-                    path: "$categories",
-                    preserveNullAndEmptyArrays: true,
-                  },
-                },
-                {
-                  text: {
-                    path: "categories",
                     query: req.query.search,
                     fuzzy: { maxEdits: 1 },
                   },
@@ -113,27 +45,98 @@ const searchController = {
           },
         },
         {
-          $project: {
-            title: 1,
-            imageUrl: "$img",
-            categories: 1,
-            color: 1,
-            price: 1,
-            discountProduct_id: 1,
-            discount_amount: {
-              $arrayElemAt: ["$discountProducts.discount_amount", 0],
-            },
-          },
-        },
-        {
-          $addFields: {
-            discount_amount: { $ifNull: ["$discount_amount", 0] },
-          },
-        },
-        {
           $limit: 5,
         },
-      ]);
+      ]).project({
+        _id: 1,
+        title: 1,
+        categories: 1,
+        img: 1,
+        color: 1,
+        imageUrl: 1,
+        price: 1,
+        discountProduct_id: 1,
+        discount_amount: {
+          $arrayElemAt: ["$discountProducts.discount_amount", 0],
+        },
+      });
+
+      // const search = await Product.aggregate([
+      //   {
+      //     $search: {
+      //       index: "custom2",
+      //       compound: {
+      //         should: [
+      //           {
+      //             autocomplete: {
+      //               path: "title",
+      //               query: req.query.search,
+      //             },
+      //           },
+      //           {
+      //             text: {
+      //               path: "title",
+      //               query: req.query.search,
+      //               fuzzy: { maxEdits: 1 },
+      //             },
+      //           },
+      //           {
+      //             text: {
+      //               path: "color",
+      //               query: req.query.search,
+      //               fuzzy: { maxEdits: 1 },
+      //             },
+      //           },
+      //           {
+      //             $unwind: {
+      //               path: "$categories",
+      //               preserveNullAndEmptyArrays: true,
+      //             },
+      //           },
+      //           {
+      //             text: {
+      //               path: "categories",
+      //               query: req.query.search,
+      //               fuzzy: { maxEdits: 1 },
+      //             },
+      //           },
+      //         ],
+      //         minimumShouldMatch: 1,
+      //       },
+      //     },
+      //   },
+      //   {
+      //     $lookup: {
+      //       from: "discountproducts",
+      //       localField: "discountProduct_id",
+      //       foreignField: "_id",
+      //       as: "discountProducts",
+      //     },
+      //   },
+      //   {
+      //     $project: {
+      //       title: 1,
+      //       imageUrl: "$img",
+      //       categories: 1,
+      //       color: 1,
+      //       price: 1,
+      //       discountProduct_id: 1,
+      //       discount_amount: {
+      //         $arrayElemAt: ["$discountProducts.discount_amount", 0],
+      //       },
+      //     },
+      //   },
+      //   {
+      //     $addFields: {
+      //       discount_amount: { $ifNull: ["$discount_amount", 0] },
+      //     },
+      //   },
+      //   {
+      //     $limit: 5,
+      //   },
+      // ]);
+
+      // const search = await Product.find().limit(5).lean();
 
       console.log("search", search);
 

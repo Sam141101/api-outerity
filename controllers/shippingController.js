@@ -98,10 +98,10 @@ const shippingController = {
       );
 
       const listService = getServiceGHN.data;
-      console.log({
-        listService: listService,
-        districtId: districtIdShop,
-      });
+      // console.log({
+      //   listService: listService,
+      //   districtId: districtIdShop,
+      // });
       res.status(200).json({
         listService: listService,
         districtId: districtIdShop,
