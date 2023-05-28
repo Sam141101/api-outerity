@@ -310,7 +310,19 @@ const productController = {
       // trước đó
       if (req.query.new) {
         products = await Product.find().sort({ createdAt: -1 }).limit(1);
-      } else if (req.query.category !== "undefined") {
+      } else if (req.query.category === "all") {
+        products = await Product.find()
+          .sort(sort)
+          .skip(quanti)
+          .limit(pageSize)
+          .populate("discountProduct_id", "discount_amount")
+          .populate("sizes", "size inStock")
+          .select("title img price discountProduct_id sizes");
+
+        totalProduct = await Product.countDocuments();
+      }
+      // if (req.query.category !== "undefined")
+      else {
         products = await Product.find({
           categories: {
             $in: [req.query.category],
@@ -329,16 +341,6 @@ const productController = {
             $in: [req.query.category],
           },
         });
-      } else {
-        products = await Product.find()
-          .sort(sort)
-          .skip(quanti)
-          .limit(pageSize)
-          .populate("discountProduct_id", "discount_amount")
-          .populate("sizes", "size inStock")
-          .select("title img price discountProduct_id sizes");
-
-        totalProduct = await Product.countDocuments();
       }
       console.log("totalProduct", totalProduct);
 
