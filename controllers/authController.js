@@ -1,23 +1,23 @@
 const router = require("express").Router();
 const User = require("../models/User");
 const Token = require("../models/Token");
-const CryptoJS = require("crypto-js");
+// const CryptoJS = require("crypto-js");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const mongoose = require("mongoose");
 
-const {
-  verifyTokenAndAuthorization,
-  verifyToken,
-} = require("../routes/verifyToken");
+// const {
+//   verifyTokenAndAuthorization,
+//   verifyToken,
+// } = require("../routes/verifyToken");
 const Cart = require("../models/Cart");
-const ListProduct = require("../models/ListProduct");
+// const ListProduct = require("../models/ListProduct");
 const sendEmail = require("../utils/sendEmail");
 const crypto = require("crypto");
 const RefreshToken = require("../models/RefreshToken");
-const Shipping = require("../models/Shipping");
+// const Shipping = require("../models/Shipping");
 
-let refreshTokens = [];
+// let refreshTokens = [];
 
 const generateAccessToken = (user) => {
   // console.log("input", user);
@@ -213,9 +213,9 @@ const authController = {
         return res.status(400).send({ message: "User not exists" });
       }
 
-      return res.status(200).send({ message: "Password updated successfully" });
+      res.status(200).send({ message: "Password updated successfully" });
 
-      res.status(200).send({ message: "Update success" });
+      // res.status(200).send({ message: "Update success" });
     } catch (error) {
       res.status(500).send({ message: "Fail" });
       console.log(error);
