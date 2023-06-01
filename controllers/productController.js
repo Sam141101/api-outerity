@@ -577,6 +577,24 @@ const productController = {
       res.status(500).json(err);
     }
   },
+
+  // updateSrc: async (req, res) => {
+  //   try {
+  //     const updateProduct = await Product.updateOne(
+  //       { _id: req.params.id },
+  //       {
+  //         setImg: req.body.img,
+  //       },
+  //       { upsert: true }
+  //     );
+
+  //     const product = await Product.findOne({ _id: req.params.id });
+
+  //     res.status(200).json(product);
+  //   } catch (err) {
+  //     res.status(500).json(err);
+  //   }
+  // },
 };
 
 module.exports = productController;

@@ -17,6 +17,8 @@ router.put(
   productController.updateProduct
 );
 
+// router.put("/src/:id", productController.updateSrc);
+
 //DELETE
 router.delete(
   "/:id",
