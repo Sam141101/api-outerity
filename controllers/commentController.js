@@ -1,6 +1,6 @@
 const Comment = require("../models/Comment");
 const Order = require("../models/Order");
-const User = require("../models/User");
+// const User = require("../models/User");
 const mongoose = require("mongoose");
 
 const commentController = {
@@ -102,81 +102,165 @@ const commentController = {
   // Lấy ra 1 bình luận
   getUserComment: async (req, res) => {
     try {
+      // const option = req.params.option;
+      // const amountImg = await Comment.find({
+      //   product_id: req.params.id,
+      //   img: { $exists: true },
+      // })
+      //   .select("img")
+      //   .lean();
+
+      // const amountComment = await Comment.find({
+      //   product_id: req.params.id,
+      //   comment: { $exists: true },
+      // })
+      //   .select("comment")
+      //   .lean();
+
+      // const amountStar1 = await Comment.find({
+      //   product_id: req.params.id,
+      //   quantiStar: 1,
+      // })
+      //   .select("quantiStar")
+      //   .lean();
+
+      // const amountStar2 = await Comment.find({
+      //   product_id: req.params.id,
+      //   quantiStar: 2,
+      // })
+      //   .select("quantiStar")
+      //   .lean();
+
+      // const amountStar3 = await Comment.find({
+      //   product_id: req.params.id,
+      //   quantiStar: 3,
+      // })
+      //   .select("quantiStar")
+      //   .lean();
+
+      // const amountStar4 = await Comment.find({
+      //   product_id: req.params.id,
+      //   quantiStar: 4,
+      // })
+      //   .select("quantiStar")
+      //   .lean();
+
+      // const amountStar5 = await Comment.find({
+      //   product_id: req.params.id,
+      //   quantiStar: 5,
+      // })
+      //   .select("quantiStar")
+      //   .lean();
+
+      // let filter = { product_id: req.params.id };
+      // if (option) {
+      //   if (option === "img" || option === "comment") {
+      //     filter[option] = { $exists: true };
+      //   } else if (option === "all") {
+      //     // không thêm điều kiện lọc
+      //   } else {
+      //     filter.quantiStar = parseInt(option);
+      //   }
+      // }
+
+      // const list = await Comment.find(filter).populate({ path: "user_id" });
+
+      // // Tính tổng số sao đánh giá
+      // const starAmount = await Comment.find({
+      //   product_id: req.params.id,
+      // })
+      //   .select("quantiStar")
+      //   .lean();
+      // const totalEvaluateStar = starAmount.reduce(
+      //   (sum, comment) => sum + comment.quantiStar,
+      //   0
+      // );
+      // const mainEvaluateStar =
+      //   starAmount.length > 0 ? totalEvaluateStar / starAmount.length : 0;
+
+      // const amount = {
+      //   amountImg: amountImg.length,
+      //   amountComment: amountComment.length,
+      //   amountStar1: amountStar1.length,
+      //   amountStar2: amountStar2.length,
+      //   amountStar3: amountStar3.length,
+      //   amountStar4: amountStar4.length,
+      //   amountStar5: amountStar5.length,
+      // };
+
+      // const infoComment = {
+      //   mainEvaluateStar,
+      //   list,
+      //   amount,
+      // };
+
       const option = req.params.option;
-      const amountImg = await Comment.find({
-        product_id: req.params.id,
-        img: { $exists: true },
-      })
-        .select("img")
-        .lean();
+      const filters = { product_id: req.params.id };
+      const promises = [];
 
-      const amountComment = await Comment.find({
-        product_id: req.params.id,
-        comment: { $exists: true },
-      })
-        .select("comment")
-        .lean();
-
-      const amountStar1 = await Comment.find({
-        product_id: req.params.id,
-        quantiStar: 1,
-      })
-        .select("quantiStar")
-        .lean();
-
-      const amountStar2 = await Comment.find({
-        product_id: req.params.id,
-        quantiStar: 2,
-      })
-        .select("quantiStar")
-        .lean();
-
-      const amountStar3 = await Comment.find({
-        product_id: req.params.id,
-        quantiStar: 3,
-      })
-        .select("quantiStar")
-        .lean();
-
-      const amountStar4 = await Comment.find({
-        product_id: req.params.id,
-        quantiStar: 4,
-      })
-        .select("quantiStar")
-        .lean();
-
-      const amountStar5 = await Comment.find({
-        product_id: req.params.id,
-        quantiStar: 5,
-      })
-        .select("quantiStar")
-        .lean();
-
-      let filter = { product_id: req.params.id };
-      if (option) {
-        if (option === "img" || option === "comment") {
-          filter[option] = { $exists: true };
-        } else if (option === "all") {
-          // không thêm điều kiện lọc
-        } else {
-          filter.quantiStar = parseInt(option);
-        }
+      if (option === "img" || option === "comment") {
+        filters[option] = { $exists: true };
+      } else if (option === "all") {
+        // không thêm điều kiện lọc
+      } else {
+        filters.quantiStar = parseInt(option);
       }
 
-      const list = await Comment.find(filter).populate({ path: "user_id" });
+      promises.push(Comment.find(filters).populate({ path: "user_id" }));
+      promises.push(
+        Comment.find({ product_id: req.params.id, img: { $exists: true } })
+          .select("img")
+          .lean()
+      );
+      promises.push(
+        Comment.find({ product_id: req.params.id, comment: { $exists: true } })
+          .select("comment")
+          .lean()
+      );
+      promises.push(
+        Comment.find({ product_id: req.params.id, quantiStar: 1 })
+          .select("quantiStar")
+          .lean()
+      );
+      promises.push(
+        Comment.find({ product_id: req.params.id, quantiStar: 2 })
+          .select("quantiStar")
+          .lean()
+      );
+      promises.push(
+        Comment.find({ product_id: req.params.id, quantiStar: 3 })
+          .select("quantiStar")
+          .lean()
+      );
+      promises.push(
+        Comment.find({ product_id: req.params.id, quantiStar: 4 })
+          .select("quantiStar")
+          .lean()
+      );
+      promises.push(
+        Comment.find({ product_id: req.params.id, quantiStar: 5 })
+          .select("quantiStar")
+          .lean()
+      );
+
+      const [
+        list,
+        amountImg,
+        amountComment,
+        amountStar1,
+        amountStar2,
+        amountStar3,
+        amountStar4,
+        amountStar5,
+      ] = await Promise.all(promises);
 
       // Tính tổng số sao đánh giá
-      const starAmount = await Comment.find({
-        product_id: req.params.id,
-      })
-        .select("quantiStar")
-        .lean();
-      const totalEvaluateStar = starAmount.reduce(
+      const totalEvaluateStar = list.reduce(
         (sum, comment) => sum + comment.quantiStar,
         0
       );
       const mainEvaluateStar =
-        starAmount.length > 0 ? totalEvaluateStar / starAmount.length : 0;
+        (list.length && totalEvaluateStar / list.length) || 0;
 
       const amount = {
         amountImg: amountImg.length,
