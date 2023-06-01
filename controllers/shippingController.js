@@ -59,35 +59,83 @@ const shippingController = {
   // Lấy ra gói dịch vụ
   getServicePack: async (req, res) => {
     try {
-      // Lấy mã Quận huyện của người nhận hàng
-      const findUserAddress = await Address.findOne({
-        user_id: mongoose.Types.ObjectId(req.params.id),
-      })
-        .select("district_id")
-        .lean();
+      // // Lấy mã Quận huyện của người nhận hàng
+      // const findUserAddress = await Address.findOne({
+      //   user_id: mongoose.Types.ObjectId(req.params.id),
+      // })
+      //   .select("district_id")
+      //   .lean();
 
-      // Kiểm tra xem có địa chỉ chưa
-      if (findUserAddress === null) {
+      // // Kiểm tra xem có địa chỉ chưa
+      // if (findUserAddress === null) {
+      //   return res.status(200).json({});
+      // }
+
+      // // Lấy mã Quận huyện của người gửi hàng
+      // const findShopAddress = await Address.findOne({
+      //   user_id: mongoose.Types.ObjectId(process.env.ADMIN_ID),
+      // })
+      //   .select("district_id")
+      //   .lean();
+
+      // const districtIdShop = findShopAddress.district_id;
+
+      // const shopid = Number(process.env.SHOPID);
+
+      // const getServiceGHN = await axios.post(
+      //   "https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/available-services",
+      //   {
+      //     shop_id: shopid, // Mã định danh của cửa hàng
+      //     from_district: districtIdShop, // mã Quận/Huyện của người gửi hàng.
+      //     to_district: findUserAddress.district_id, // mã Quận/Huyện của người nhận hàng.
+      //   },
+      //   {
+      //     headers: {
+      //       token: process.env.TOKEN,
+      //       "Content-type": "application/json",
+      //     },
+      //   }
+      // );
+
+      // const listService = getServiceGHN.data;
+      // // console.log({
+      // //   listService: listService,
+      // //   districtId: districtIdShop,
+      // // });
+      // res.status(200).json({
+      //   listService: listService,
+      //   districtId: districtIdShop,
+      // });
+
+      // Find user address and shop address in parallel
+      const [userAddress, shopAddress] = await Promise.all([
+        Address.findOne({
+          user_id: mongoose.Types.ObjectId(req.params.id),
+        })
+          .select("district_id")
+          .lean(),
+        Address.findOne({
+          user_id: mongoose.Types.ObjectId(process.env.ADMIN_ID),
+        })
+          .select("district_id")
+          .lean(),
+      ]);
+
+      // Check if user address exists
+      if (!userAddress) {
         return res.status(200).json({});
       }
 
-      // Lấy mã Quận huyện của người gửi hàng
-      const findShopAddress = await Address.findOne({
-        user_id: mongoose.Types.ObjectId(process.env.ADMIN_ID),
-      })
-        .select("district_id")
-        .lean();
-
-      const districtIdShop = findShopAddress.district_id;
-
+      const districtIdShop = shopAddress.district_id;
       const shopid = Number(process.env.SHOPID);
 
+      // Call GHN API to get list of available services
       const getServiceGHN = await axios.post(
         "https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/available-services",
         {
-          shop_id: shopid, // Mã định danh của cửa hàng
-          from_district: districtIdShop, // mã Quận/Huyện của người gửi hàng.
-          to_district: findUserAddress.district_id, // mã Quận/Huyện của người nhận hàng.
+          shop_id: shopid,
+          from_district: districtIdShop,
+          to_district: userAddress.district_id,
         },
         {
           headers: {
@@ -98,12 +146,9 @@ const shippingController = {
       );
 
       const listService = getServiceGHN.data;
-      // console.log({
-      //   listService: listService,
-      //   districtId: districtIdShop,
-      // });
+
       res.status(200).json({
-        listService: listService,
+        listService,
         districtId: districtIdShop,
       });
     } catch (error) {
@@ -132,7 +177,7 @@ const shippingController = {
         ProvinceID: province.ProvinceID,
         ProvinceName: province.ProvinceName,
       }));
-      // console.log(InfoProvince);
+      // console.log("InfoProvince", InfoProvince);
       res.status(200).json(InfoProvince);
     } catch (error) {
       res.status(500).json("Không tìm thấy tỉnh thành nào?");
