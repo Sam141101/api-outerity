@@ -228,7 +228,9 @@ const productController = {
       const product = await Product.findById(req.params.id)
         .populate("discountProduct_id", "discount_amount")
         .populate("sizes", "size inStock")
-        .select("title img categories color price discountProduct_id sizes");
+        .select(
+          "title img categories color price discountProduct_id sizes setImg"
+        );
 
       console.timeEnd("myTimer");
       res.status(200).json(product);
@@ -542,7 +544,7 @@ const productController = {
         .limit(12)
         .populate("discountProduct_id", "discount_amount")
         .populate("sizes", "size inStock")
-        .select("title img price discountProduct_id sizes");
+        .select("title setImg img price discountProduct_id sizes");
 
       res.status(200).json(products);
     } catch (err) {
@@ -568,7 +570,7 @@ const productController = {
         .limit(4)
         .populate("discountProduct_id", "discount_amount")
         .populate("sizes", "size inStock")
-        .select("title img price discountProduct_id sizes");
+        .select("title img price discountProduct_id sizes setImg");
 
       console.log(products.length);
 
