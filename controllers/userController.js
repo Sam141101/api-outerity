@@ -21,7 +21,21 @@ const userController = {
         },
         { new: true }
       );
-      res.status(200).json({ updatedUser, token: req.body.token });
+
+      console.log(updatedUser);
+      const { img, password, isAdmin, ...otherDetails } = updatedUser._doc;
+      const userCurrent = {
+        ...otherDetails,
+        isAdmin,
+        img,
+        token: req.body.token,
+      };
+
+      res.status(200).json({
+        message: "update-user-succes",
+        userCurrent: userCurrent,
+      });
+      // res.status(200).json("update-user-succes");
     } catch (err) {
       res.status(500).json(err);
     }

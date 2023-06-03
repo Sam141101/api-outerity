@@ -215,7 +215,7 @@ const cartController = {
 
       console.log("sut thanh cong");
       console.timeEnd("myTimer");
-      res.status(200).json(cart);
+      res.status(200).json({ cart: cart, message: "addcart-success" });
       // res.status(200).json("getCart");
     } catch (err) {
       console.log("failer");
@@ -338,41 +338,41 @@ const cartController = {
   // Xoá sản phẩm trong giỏ hàng
   deleteProductInCart: async (req, res) => {
     try {
-      // const getProduct = await ListProduct.findById(req.params.id).lean();
-      // const cart_id = getProduct.cart_id;
+      const getProduct = await ListProduct.findById(req.params.id).lean();
+      const cart_id = getProduct.cart_id;
 
-      // const update = {
-      //   $pull: { list_product: req.params.id },
-      //   $inc: { total_price: -getProduct.price, total_quantity: -1 },
-      // };
-      // const options = { new: true }; // Trả về giỏ hàng được cập nhật sau khi thay đổi
+      const update = {
+        $pull: { list_product: req.params.id },
+        $inc: { total_price: -getProduct.price, total_quantity: -1 },
+      };
+      const options = { new: true }; // Trả về giỏ hàng được cập nhật sau khi thay đổi
 
-      // const updatedCart = await Cart.findOneAndUpdate(
-      //   { _id: cart_id },
-      //   update,
-      //   options
-      // ).populate("list_product");
-
-      // await ListProduct.deleteOne({ _id: req.params.id });
-
-      // Lấy thông tin sản phẩm cần xoá
-      const getProduct = await ListProduct.findOne({
-        _id: req.params.id,
-      }).lean();
-
-      // Cập nhật giỏ hàng bằng cách xoá sản phẩm ra khỏi danh sách sản phẩm
       const updatedCart = await Cart.findOneAndUpdate(
-        { _id: getProduct.cart_id },
-        { $pull: { list_product: req.params.id } },
-        { new: true }
-      ).populate({ path: "list_product", model: "ListProduct" });
+        { _id: cart_id },
+        update,
+        options
+      ).populate("list_product");
 
-      // xoá ListProduct với _id là req.params.id
       await ListProduct.deleteOne({ _id: req.params.id });
 
+      // Lấy thông tin sản phẩm cần xoá
+      // const getProduct = await ListProduct.findOne({
+      //   _id: req.params.id,
+      // }).lean();
+
+      // // Cập nhật giỏ hàng bằng cách xoá sản phẩm ra khỏi danh sách sản phẩm
+      // const updatedCart = await Cart.findOneAndUpdate(
+      //   { _id: getProduct.cart_id },
+      //   { $pull: { list_product: req.params.id } },
+      //   { new: true }
+      // ).populate({ path: "list_product", model: "ListProduct" });
+
+      // // xoá ListProduct với _id là req.params.id
+      // await ListProduct.deleteOne({ _id: req.params.id });
+
       console.log("thanhf cong");
-      res.status(200).json(updatedCart);
-      // res.status(200).json("Cart has been deleted...");
+      // res.status(200).json(updatedCart);
+      res.status(200).json("Cart has been deleted...");
     } catch (err) {
       res.status(500).json(err);
     }
@@ -388,16 +388,34 @@ const cartController = {
       const total_price = user.cart_id.total_price;
       const total_quanti = user.cart_id.total_quantity;
 
-      const getCart = await ListProduct.find({
+      // const getCart = await ListProduct.find({
+      //   cart_id: user.cart_id._id,
+      // }).populate({
+      //   path: "product_id",
+      //   populate: { path: "discountProduct_id" },
+      // });
+
+      const getCart1 = await ListProduct.find({
         cart_id: user.cart_id._id,
-      }).populate({
-        path: "product_id",
-        populate: { path: "discountProduct_id" },
-      });
+      })
+        .populate({
+          path: "product_id",
+          populate: { path: "discountProduct_id" },
+        })
+        .select("cart_id product_id quantity price size");
+
+      // console.log("getCart1", getCart1[0].product_id.discountProduct_id);
+
+      // const product = await Product.findById(req.params.id)
+      // .populate("discountProduct_id", "discount_amount")
+      // .populate("sizes", "size inStock")
+      // .select(
+      //   "title img categories color price discountProduct_id sizes setImg"
+      // );
 
       const getallcart = {
         pricecart: total_price,
-        product: getCart,
+        product: getCart1,
         quanticart: total_quanti,
       };
 
