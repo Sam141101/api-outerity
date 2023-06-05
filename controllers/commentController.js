@@ -193,6 +193,17 @@ const commentController = {
       //   list,
       //   amount,
       // };
+      console.log("req.query", req.query);
+      let page = req.query.page;
+      const pageSize = parseInt(req.query.limit);
+      page = parseInt(page);
+      if (page < 1) {
+        page = 1;
+      }
+      let quanti = (page - 1) * pageSize;
+      console.log("quanti", quanti);
+      console.log("page", page);
+      // console.log('quanti',quanti)
 
       const option = req.params.option;
       const filters = { product_id: req.params.id };
@@ -206,44 +217,47 @@ const commentController = {
         filters.quantiStar = parseInt(option);
       }
 
-      promises.push(Comment.find(filters).populate({ path: "user_id" }));
+      // promises.push(Comment.countDocuments(filters));
       promises.push(
-        Comment.find({ product_id: req.params.id, img: { $exists: true } })
-          .select("img")
-          .lean()
+        Comment.find(filters)
+          .sort({
+            createdAt: -1,
+          })
+          // .skip(quanti)
+          // .limit(pageSize)
+          .populate({ path: "user_id" })
       );
       promises.push(
-        Comment.find({ product_id: req.params.id, comment: { $exists: true } })
-          .select("comment")
-          .lean()
+        // Comment.find({ product_id: req.params.id, img: { $exists: true } })
+        Comment.countDocuments({
+          product_id: req.params.id,
+          img: { $exists: true },
+        })
       );
       promises.push(
-        Comment.find({ product_id: req.params.id, quantiStar: 1 })
-          .select("quantiStar")
-          .lean()
+        Comment.countDocuments({
+          product_id: req.params.id,
+          comment: { $exists: true },
+        })
       );
       promises.push(
-        Comment.find({ product_id: req.params.id, quantiStar: 2 })
-          .select("quantiStar")
-          .lean()
+        Comment.countDocuments({ product_id: req.params.id, quantiStar: 1 })
       );
       promises.push(
-        Comment.find({ product_id: req.params.id, quantiStar: 3 })
-          .select("quantiStar")
-          .lean()
+        Comment.countDocuments({ product_id: req.params.id, quantiStar: 2 })
       );
       promises.push(
-        Comment.find({ product_id: req.params.id, quantiStar: 4 })
-          .select("quantiStar")
-          .lean()
+        Comment.countDocuments({ product_id: req.params.id, quantiStar: 3 })
       );
       promises.push(
-        Comment.find({ product_id: req.params.id, quantiStar: 5 })
-          .select("quantiStar")
-          .lean()
+        Comment.countDocuments({ product_id: req.params.id, quantiStar: 4 })
+      );
+      promises.push(
+        Comment.countDocuments({ product_id: req.params.id, quantiStar: 5 })
       );
 
       const [
+        // total,
         list,
         amountImg,
         amountComment,
@@ -259,26 +273,51 @@ const commentController = {
         (sum, comment) => sum + comment.quantiStar,
         0
       );
+
+      console.log("totalEvaluateStar", totalEvaluateStar);
+      // const mainEvaluateStar = (total && totalEvaluateStar / total) || 0;
+
+      // Tính tổng của tất cả các phần tử trong list
+      // const sum = list.reduce((acc, curr) => {
+      //   return acc + curr;
+      // }, 0);
+
+      // console.log("sum", sum);
+
       const mainEvaluateStar =
         (list.length && totalEvaluateStar / list.length) || 0;
 
+      // Lấy 3 phần tử đầu tiên trong list
+      const result = list.slice(quanti, quanti + pageSize);
+
       const amount = {
-        amountImg: amountImg.length,
-        amountComment: amountComment.length,
-        amountStar1: amountStar1.length,
-        amountStar2: amountStar2.length,
-        amountStar3: amountStar3.length,
-        amountStar4: amountStar4.length,
-        amountStar5: amountStar5.length,
+        amountImg: amountImg,
+        amountComment: amountComment,
+        amountStar1: amountStar1,
+        amountStar2: amountStar2,
+        amountStar3: amountStar3,
+        amountStar4: amountStar4,
+        amountStar5: amountStar5,
+      };
+
+      const pagi = {
+        page: page,
+        totalRows: list.length,
+        limit: pageSize,
       };
 
       const infoComment = {
         mainEvaluateStar,
-        list,
+        list: result,
         amount,
       };
 
-      res.status(200).json(infoComment);
+      console.log("mainEvaluateStar", mainEvaluateStar);
+      // res.status(200).json(infoComment);
+      res.status(200).json({
+        resultProducts: infoComment,
+        pagi: pagi,
+      });
     } catch (err) {
       res.status(500).json(err);
       console.log(err);

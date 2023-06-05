@@ -553,7 +553,7 @@ const productController = {
   },
 
   getSimilarProduct: async (req, res) => {
-    console.log("có");
+    // console.log("có");
     const sort = {
       createdAt: -1,
     };
@@ -572,7 +572,7 @@ const productController = {
         .populate("sizes", "size inStock")
         .select("title img price discountProduct_id sizes setImg");
 
-      console.log(products.length);
+      // console.log(products.length);
 
       res.status(200).json(products);
     } catch (err) {
