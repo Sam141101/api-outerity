@@ -10,11 +10,11 @@ const userController = {
         req.params.id,
         {
           $set: {
-            username: req.body.username,
+            // username: req.body.username,
             email: req.body.email,
             phone: req.body.phone,
             // address: req.body.address,
-            genders: req.body.genders,
+            gender: req.body.gender,
             img: req.body.img,
             fullname: req.body.fullname,
           },

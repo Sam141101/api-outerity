@@ -283,28 +283,6 @@ const authController = {
         await findRefreshToken.save();
       }
 
-      // const updateRefreshToken = await RefreshToken.updateOne(
-      //   {
-      //     _id: findRefreshToken._id,
-      //   },
-      //   {
-      //     $set: {
-      //       refreshToken: refreshToken,
-      //     },
-      //   },
-      //   {
-      //     new: true,
-      //   }
-      // );
-
-      // res.cookie("refreshToken", refreshToken, {
-      //   httpOnly: true,
-      //   secure: false,
-      //   path: "/",
-      //   sameSite: "strict",
-      //   withCredentials: true,
-      // });
-
       const { img, password, isAdmin, ...otherDetails } = user._doc;
       res.status(200).json({ ...otherDetails, isAdmin, img, token });
     } catch (err) {
