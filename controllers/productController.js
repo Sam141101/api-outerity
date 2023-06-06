@@ -401,7 +401,6 @@ const productController = {
       let expireAt;
       if (findDiscount.expireAt == null) {
         expireAt = 0;
-        // console.log("fff");
       } else {
         const expireTimeUnix = findDiscount.expireAt.getTime();
         const now = Date.now();
