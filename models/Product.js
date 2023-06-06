@@ -6,6 +6,7 @@ const ProductSchema = new mongoose.Schema(
     desc: { type: String, required: true },
     img: { type: String, required: true },
     setImg: { type: String, required: true },
+    grandeImg: { type: String, required: true },
     categories: { type: String },
     // size: { type: Array },
     sizes: [{ type: mongoose.Schema.Types.ObjectId, ref: "Size" }],

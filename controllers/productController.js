@@ -1,66 +1,13 @@
-const User = require("../models/User");
+// const User = require("../models/User");
 const Product = require("../models/Product");
 const mongoose = require("mongoose");
 const Size = require("../models/Size");
 const DiscountProduct = require("../models/DiscountProduct");
 
-const PAGE_SIZE = 12;
-
 const productController = {
   // Tạo sản phẩm
   createProduct: async (req, res) => {
     try {
-      // const newProduct = new Product({
-      //   title: req.body.title,
-      //   desc: req.body.desc,
-      //   img: req.body.img,
-      //   categories: req.body.categories,
-      //   color: req.body.color,
-      //   price: req.body.price,
-      // });
-
-      // let expireTimeAt = null;
-
-      // if (req.body.discount && req.body.expireAt) {
-      //   expireTimeAt = new Date(
-      //     Date.now() + req.body.expireAt * 60 * 60 * 1000
-      //   );
-      // }
-
-      // const newDiscount = new Discount({
-      //   product_id: newProduct._id,
-      //   discount_amount: req.body.discount,
-      //   expireAt: expireTimeAt,
-      // });
-
-      // await newDiscount.save();
-
-      // const newSizeS = new Size({
-      //   product_id: newProduct._id,
-      //   size: "S",
-      //   inStock: req.body.sizeS,
-      // });
-
-      // await newSizeS.save();
-
-      // const newSizeM = new Size({
-      //   product_id: newProduct._id,
-      //   size: "M",
-      //   inStock: req.body.sizeM,
-      // });
-      // await newSizeM.save();
-
-      // const newSizeL = new Size({
-      //   product_id: newProduct._id,
-      //   size: "L",
-      //   inStock: req.body.sizeL,
-      // });
-
-      // await newSizeL.save();
-
-      // const savedProduct = await newProduct.save();
-
-      // Tạo đối tượng sản phẩm mới
       const newProduct = new Product({
         title: req.body.title,
         desc: req.body.desc,
@@ -229,7 +176,7 @@ const productController = {
         .populate("discountProduct_id", "discount_amount")
         .populate("sizes", "size inStock")
         .select(
-          "title img categories color price discountProduct_id sizes setImg"
+          "title img categories color price discountProduct_id sizes grandeImg"
         );
 
       console.timeEnd("myTimer");
@@ -319,7 +266,7 @@ const productController = {
           .limit(pageSize)
           .populate("discountProduct_id", "discount_amount")
           .populate("sizes", "size inStock")
-          .select("title img price discountProduct_id sizes");
+          .select("title grandeImg setImg price discountProduct_id sizes");
 
         totalProduct = await Product.countDocuments();
       }
@@ -543,7 +490,7 @@ const productController = {
         .limit(12)
         .populate("discountProduct_id", "discount_amount")
         .populate("sizes", "size inStock")
-        .select("title setImg img price discountProduct_id sizes");
+        .select("title setImg grandeImg price discountProduct_id sizes");
 
       res.status(200).json(products);
     } catch (err) {
@@ -569,7 +516,7 @@ const productController = {
         .limit(4)
         .populate("discountProduct_id", "discount_amount")
         .populate("sizes", "size inStock")
-        .select("title img price discountProduct_id sizes setImg");
+        .select("title price discountProduct_id sizes setImg grandeImg");
 
       // console.log(products.length);
 
@@ -579,23 +526,23 @@ const productController = {
     }
   },
 
-  // updateSrc: async (req, res) => {
-  //   try {
-  //     const updateProduct = await Product.updateOne(
-  //       { _id: req.params.id },
-  //       {
-  //         setImg: req.body.img,
-  //       },
-  //       { upsert: true }
-  //     );
+  updateSrc: async (req, res) => {
+    try {
+      const updateProduct = await Product.updateOne(
+        { _id: req.params.id },
+        {
+          grandeImg: req.body.img,
+        },
+        { upsert: true }
+      );
 
-  //     const product = await Product.findOne({ _id: req.params.id });
+      const product = await Product.findOne({ _id: req.params.id });
 
-  //     res.status(200).json(product);
-  //   } catch (err) {
-  //     res.status(500).json(err);
-  //   }
-  // },
+      res.status(200).json(product);
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  },
 };
 
 module.exports = productController;
