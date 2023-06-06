@@ -295,11 +295,11 @@ const productController = {
       };
     } else if (req.query.sort === "asc") {
       sort = {
-        price: -1,
+        price: 1,
       };
     } else if (req.query.sort === "desc") {
       sort = {
-        price: 1,
+        price: -1,
       };
     }
 
