@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const Cart = require("../models/Cart");
 
 const UserSchema = new mongoose.Schema(
   {
@@ -15,7 +14,6 @@ const UserSchema = new mongoose.Schema(
     img: { type: String },
     phone: { type: Number },
     gender: { type: String },
-    // address: { type: String },
     verified: { type: Boolean, default: false },
     firstTimeBuy: {
       type: Number,

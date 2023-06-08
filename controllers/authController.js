@@ -1,23 +1,15 @@
 const router = require("express").Router();
 const User = require("../models/User");
 const Token = require("../models/Token");
-// const CryptoJS = require("crypto-js");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const mongoose = require("mongoose");
 
-// const {
-//   verifyTokenAndAuthorization,
-//   verifyToken,
-// } = require("../routes/verifyToken");
 const Cart = require("../models/Cart");
-// const ListProduct = require("../models/ListProduct");
 const sendEmail = require("../utils/sendEmail");
 const crypto = require("crypto");
 const RefreshToken = require("../models/RefreshToken");
 // const Shipping = require("../models/Shipping");
-
-// let refreshTokens = [];
 
 const generateAccessToken = (user) => {
   // console.log("input", user);
@@ -259,6 +251,7 @@ const authController = {
   login: async (req, res) => {
     try {
       const user = await User.findOne({ username: req.body.username });
+      console.log("user---", user);
       if (!user) return res.status(404).json("Không tìm thấy người dùng!");
 
       const isPasswordCorrect = await bcrypt.compare(

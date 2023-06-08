@@ -1,10 +1,8 @@
-const { response } = require("express");
 const paypal = require("paypal-rest-sdk");
 const Cart = require("../models/Cart");
 const DiscountCode = require("../models/DiscountCode");
 const ListProduct = require("../models/ListProduct");
 const Order = require("../models/Order");
-const axios = require("axios");
 const mongoose = require("mongoose");
 
 const Product = require("../models/Product");
@@ -26,12 +24,7 @@ const paypalController = {
   // thanh toán online
   payment: async (req, res) => {
     try {
-      if (
-        // !req.body.inputs.fullname ||
-        // !req.body.inputs.phone ||
-        // !req.body.inputs.service_id ||
-        !req.body.totalPriceDelivery
-      ) {
+      if (!req.body.totalPriceDelivery) {
         res.json("Vui lòng điền đầy đủ thông tin!");
       }
 
@@ -206,13 +199,10 @@ const paypalController = {
           // },
         },
         redirect_urls: {
-          // return_url: "http://localhost:3000/test11",
-          // cancel_url: "http://localhost:3000/test12",
-
-          return_url: "http://localhost:3000/dat-hang-thanh-cong",
-          // return_url: `${process.env.BASE_URL}dat-hang-thanh-cong`,
-          cancel_url: "http://localhost:3000/dat-hang-that-bai",
-          // cancel_url: `${process.env.BASE_URL}dat-hang-that-bai`,
+          // return_url: "http://localhost:3000/dat-hang-thanh-cong",
+          return_url: `${process.env.BASE_URL}dat-hang-thanh-cong`,
+          // cancel_url: "http://localhost:3000/dat-hang-that-bai",
+          cancel_url: `${process.env.BASE_URL}dat-hang-that-bai`,
         },
         transactions: [
           {
@@ -335,27 +325,6 @@ const paypalController = {
               { new: true }
             );
 
-            // lấy cart ra
-            // const cart = await Cart.findOne({ _id: cartId });
-            // for (let i = 0; i < cart.list_product.length; i++) {
-            //   const list_pd = await ListProduct.findOne({
-            //     _id: cart.list_product[i],
-            //   });
-
-            //   list_pd.remove();
-            // }
-            // await Cart.updateOne(
-            //   { _id: cartId },
-            //   {
-            //     $set: {
-            //       list_product: [],
-            //       total_quantity: 0,
-            //       total_price: 0,
-            //     },
-            //   },
-            //   { new: true }
-            // );
-
             // Xóa danh sách sản phẩm trong giỏ hàng
             await ListProduct.deleteMany({ cart_id: cartId });
 
@@ -385,14 +354,6 @@ const paypalController = {
   //   cancel
   paymentCancel: async (req, res) => {
     const orderId = req.query.orderId;
-    // const shipping = await Shipping.findOne({
-    //   order_id: orderId,
-    // });
-    // shipping.remove();
-    // const order = await Order.findOne({
-    //   _id: orderId,
-    // });
-    // order.remove();
 
     await Shipping.deleteOne({ order_id: orderId });
     await Order.findOneAndRemove({ _id: orderId });

@@ -3,9 +3,6 @@ const orderController = require("../controllers/orderController");
 
 const router = require("express").Router();
 
-// Tạo đơn đặt hàng
-router.post("/", middlewareController.verifyToken, orderController.createOrder); // Không được sử dụng
-
 // Khách hàng huỷ đơn hàng
 router.put(
   "/order-cancel/:id",

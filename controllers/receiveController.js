@@ -1,4 +1,3 @@
-const { response } = require("express");
 const Cart = require("../models/Cart");
 const DiscountCode = require("../models/DiscountCode");
 const ListProduct = require("../models/ListProduct");
@@ -12,12 +11,7 @@ const receiveController = {
   receive: async (req, res) => {
     try {
       // console.log("req.body", req.body);
-      if (
-        // !req.body.inputs.fullname ||
-        // !req.body.inputs.phone ||
-        // !req.body.inputs.service_id ||
-        !req.body.totalPriceDelivery
-      ) {
+      if (!req.body.totalPriceDelivery) {
         res.status(200).json("Vui lòng điền đầy đủ thông tin!");
       }
 
@@ -105,26 +99,9 @@ const receiveController = {
 
       await newShipping.save();
 
-      // const order = await Order.findOne({ _id: orderId.toString() }).lean();
-
-      // if (!order) {
-      //   console.log("not found");
-      //   return;
-      // }
-
       const cartIds = req.body.cart.map((cart) => cart.cart_id);
 
       const cart_id = cartIds[0];
-
-      // const carts = await Cart.find({ _id: { $in: cartIds } });
-
-      // for (const cart of carts) {
-      //   await ListProduct.deleteMany({ _id: { $in: cart.list_product } });
-      //   cart.list_product = [];
-      //   cart.total_quantity = 0;
-      //   cart.total_price = 0;
-      //   await cart.save();
-      // }
 
       await ListProduct.deleteMany({ cart_id: cart_id });
 

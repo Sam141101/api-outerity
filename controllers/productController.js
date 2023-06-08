@@ -19,16 +19,25 @@ const productController = {
 
       // Tạo đối tượng giảm giá mới nếu có
       let newDiscount = null;
+      let discountAmount = 0;
+      let expireTimeAt;
       if (req.body.discount && req.body.expireAt) {
-        const expireTimeAt = new Date(
+        expireTimeAt = new Date(
           Date.now() + req.body.expireAt * 60 * 60 * 1000
         );
-        newDiscount = new Discount({
-          product_id: newProduct._id,
-          discount_amount: req.body.discount,
-          expireAt: expireTimeAt,
-        });
+        discountAmount = req.body.discount;
+        // newDiscount = new Discount({
+        //   product_id: newProduct._id,
+        //   discount_amount: req.body.discount,
+        //   expireAt: expireTimeAt,
+        // });
       }
+
+      newDiscount = new Discount({
+        product_id: newProduct._id,
+        discount_amount: discountAmount,
+        expireAt: expireTimeAt,
+      });
 
       // Tạo mảng đối tượng kích thước mới
       const newSizes = [
@@ -186,42 +195,6 @@ const productController = {
     }
   },
 
-  // test model size
-  createSize: async (req, res) => {
-    try {
-      const size = new Size({
-        size: req.body.size,
-        inStock: req.body.inStock,
-      });
-
-      await size.save();
-      res.status(200).json(size);
-    } catch (err) {
-      res.status(500).json(err);
-    }
-  },
-
-  // test model size
-  addSize: async (req, res) => {
-    try {
-      const product = await Product.updateOne(
-        {
-          _id: req.params.id,
-        },
-        {
-          $push: { sizes: req.body.size_id },
-          $set: { discountProduct_id: req.body.discount },
-        },
-        { new: true }
-      );
-
-      // await discount_amount.save();
-      res.status(200).json(product);
-    } catch (err) {
-      res.status(500).json(err);
-    }
-  },
-
   //  Lấy ra tất cả sản phẩm
   getAllProduct: async (req, res) => {
     // Xử lí số trang hiện tại
@@ -266,7 +239,7 @@ const productController = {
           .limit(pageSize)
           .populate("discountProduct_id", "discount_amount")
           .populate("sizes", "size inStock")
-          .select("title grandeImg setImg price discountProduct_id sizes");
+          .select("title grandeImg img setImg price discountProduct_id sizes");
 
         totalProduct = await Product.countDocuments();
       }
@@ -283,7 +256,7 @@ const productController = {
 
           .populate("discountProduct_id", "discount_amount")
           .populate("sizes", "size inStock")
-          .select("title img price discountProduct_id sizes");
+          .select("title grandeImg img setImg price discountProduct_id sizes");
 
         totalProduct = await Product.countDocuments({
           categories: {
@@ -292,6 +265,33 @@ const productController = {
         });
       }
       console.log("totalProduct", totalProduct);
+
+      // thêm
+      // products = products.map((product) => {
+      //   if (product.discountProduct_id) {
+      //     const saleAmount =
+      //       (parseInt(product.price) *
+      //         product.discountProduct_id.discount_amount) /
+      //       100;
+      //     return {
+      //       ...product.toJSON(),
+      //       withSale: true,
+      //       saleAmount: saleAmount,
+      //     };
+      //   } else {
+      //     return {
+      //       ...product.toJSON(),
+      //       withSale: false,
+      //     };
+      //   }
+      // });
+
+      // // Sắp xếp theo giá tiền gốc tăng dần hoặc giảm dần, tính đến giá trị giảm giá
+      // products.sort((a, b) => {
+      //   const aPrice = a.withSale ? a.price - a.saleAmount : a.price;
+      //   const bPrice = b.withSale ? b.price - b.saleAmount : b.price;
+      //   return aPrice - bPrice;
+      // });
 
       const pagi = {
         page: page,
@@ -368,114 +368,6 @@ const productController = {
     }
   },
 
-  // thêm size
-  createSize: async (req, res) => {
-    try {
-      const newSizeS = new Size({
-        product_id: req.params.id,
-        size: "S",
-        inStock: 10,
-      });
-
-      const newSizeM = new Size({
-        product_id: req.params.id,
-        size: "M",
-        inStock: 0,
-      });
-
-      const newSizeL = new Size({
-        product_id: req.params.id,
-        size: "L",
-        inStock: 10,
-      });
-
-      await newSizeS.save();
-      await newSizeM.save();
-      await newSizeL.save();
-
-      res
-        .status(200)
-        .json({ newSizeS: newSizeS, newSizeM: newSizeM, newSizeL: newSizeL });
-    } catch (err) {
-      res.status(500).json(err);
-    }
-  },
-
-  addSize: async (req, res) => {
-    try {
-      const newSizeS = await Size.findOne({
-        product_id: mongoose.Types.ObjectId(req.params.id),
-        size: "S",
-      });
-
-      const newSizeM = await Size.findOne({
-        product_id: mongoose.Types.ObjectId(req.params.id),
-        size: "M",
-      });
-
-      const newSizeL = await Size.findOne({
-        product_id: mongoose.Types.ObjectId(req.params.id),
-        size: "L",
-      });
-
-      const newSizes = []; // khởi tạo mảng mới để lưu các ObjectId của document Size
-      if (newSizeS) {
-        newSizes.push(newSizeS._id); // thêm ObjectId của document Size S vào mảng newSizes nếu newSizeS không null
-      }
-      if (newSizeM) {
-        newSizes.push(newSizeM._id); // thêm ObjectId của document Size M vào mảng newSizes nếu newSizeM không null
-      }
-      if (newSizeL) {
-        newSizes.push(newSizeL._id); // thêm ObjectId của document Size L vào mảng newSizes nếu newSizeL không null
-      }
-
-      const findProduct = await Product.updateOne(
-        { _id: mongoose.Types.ObjectId(req.params.id) },
-        { $set: { sizes: newSizes } },
-        { new: true }
-      );
-
-      const find = await Product.findOne({
-        _id: mongoose.Types.ObjectId(req.params.id),
-      });
-      console.log("find", find);
-
-      res.status(200).json(findProduct);
-    } catch (err) {
-      res.status(500).json(err);
-    }
-  },
-
-  addDiscount: async (req, res) => {
-    try {
-      console.log(req.params, req.body);
-      const product = await Product.findOne({
-        _id: mongoose.Types.ObjectId(req.params.id),
-      });
-
-      const newDiscount = new DiscountProduct({
-        product_id: product._id,
-        discount_amount: req.body.discount,
-        expireAt: null,
-      });
-
-      await newDiscount.save();
-
-      const findProduct = await Product.updateOne(
-        { _id: mongoose.Types.ObjectId(req.params.id) },
-        { $set: { discountProduct_id: newDiscount._id } },
-        { new: true }
-      );
-
-      res
-        .status(200)
-        .json({ newDiscount: newDiscount, findProduct: findProduct });
-      // .json(product);
-    } catch (err) {
-      res.status(500).json(err);
-    }
-  },
-
   getAllProductHome: async (req, res) => {
     // console.log("có");
     const sort = {
@@ -543,6 +435,148 @@ const productController = {
       res.status(500).json(err);
     }
   },
+
+  // test model size
+  //  createSize: async (req, res) => {
+  //   try {
+  //     const size = new Size({
+  //       size: req.body.size,
+  //       inStock: req.body.inStock,
+  //     });
+
+  //     await size.save();
+  //     res.status(200).json(size);
+  //   } catch (err) {
+  //     res.status(500).json(err);
+  //   }
+  // },
+
+  // createSize: async (req, res) => {
+  //   try {
+  //     const newSizeS = new Size({
+  //       product_id: req.params.id,
+  //       size: "S",
+  //       inStock: 10,
+  //     });
+
+  //     const newSizeM = new Size({
+  //       product_id: req.params.id,
+  //       size: "M",
+  //       inStock: 0,
+  //     });
+
+  //     const newSizeL = new Size({
+  //       product_id: req.params.id,
+  //       size: "L",
+  //       inStock: 10,
+  //     });
+
+  //     await newSizeS.save();
+  //     await newSizeM.save();
+  //     await newSizeL.save();
+
+  //     res
+  //       .status(200)
+  //       .json({ newSizeS: newSizeS, newSizeM: newSizeM, newSizeL: newSizeL });
+  //   } catch (err) {
+  //     res.status(500).json(err);
+  //   }
+  // },
+
+  //  addSize: async (req, res) => {
+  //   try {
+  //     const product = await Product.updateOne(
+  //       {
+  //         _id: req.params.id,
+  //       },
+  //       {
+  //         $push: { sizes: req.body.size_id },
+  //         $set: { discountProduct_id: req.body.discount },
+  //       },
+  //       { new: true }
+  //     );
+
+  //     // await discount_amount.save();
+  //     res.status(200).json(product);
+  //   } catch (err) {
+  //     res.status(500).json(err);
+  //   }
+  // },
+
+  // addSize: async (req, res) => {
+  //   try {
+  //     const newSizeS = await Size.findOne({
+  //       product_id: mongoose.Types.ObjectId(req.params.id),
+  //       size: "S",
+  //     });
+
+  //     const newSizeM = await Size.findOne({
+  //       product_id: mongoose.Types.ObjectId(req.params.id),
+  //       size: "M",
+  //     });
+
+  //     const newSizeL = await Size.findOne({
+  //       product_id: mongoose.Types.ObjectId(req.params.id),
+  //       size: "L",
+  //     });
+
+  //     const newSizes = []; // khởi tạo mảng mới để lưu các ObjectId của document Size
+  //     if (newSizeS) {
+  //       newSizes.push(newSizeS._id); // thêm ObjectId của document Size S vào mảng newSizes nếu newSizeS không null
+  //     }
+  //     if (newSizeM) {
+  //       newSizes.push(newSizeM._id); // thêm ObjectId của document Size M vào mảng newSizes nếu newSizeM không null
+  //     }
+  //     if (newSizeL) {
+  //       newSizes.push(newSizeL._id); // thêm ObjectId của document Size L vào mảng newSizes nếu newSizeL không null
+  //     }
+
+  //     const findProduct = await Product.updateOne(
+  //       { _id: mongoose.Types.ObjectId(req.params.id) },
+  //       { $set: { sizes: newSizes } },
+  //       { new: true }
+  //     );
+
+  //     const find = await Product.findOne({
+  //       _id: mongoose.Types.ObjectId(req.params.id),
+  //     });
+  //     console.log("find", find);
+
+  //     res.status(200).json(findProduct);
+  //   } catch (err) {
+  //     res.status(500).json(err);
+  //   }
+  // },
+
+  // addDiscount: async (req, res) => {
+  //   try {
+  //     console.log(req.params, req.body);
+  //     const product = await Product.findOne({
+  //       _id: mongoose.Types.ObjectId(req.params.id),
+  //     });
+
+  //     const newDiscount = new DiscountProduct({
+  //       product_id: product._id,
+  //       discount_amount: req.body.discount,
+  //       expireAt: null,
+  //     });
+
+  //     await newDiscount.save();
+
+  //     const findProduct = await Product.updateOne(
+  //       { _id: mongoose.Types.ObjectId(req.params.id) },
+  //       { $set: { discountProduct_id: newDiscount._id } },
+  //       { new: true }
+  //     );
+
+  //     res
+  //       .status(200)
+  //       .json({ newDiscount: newDiscount, findProduct: findProduct });
+  //     // .json(product);
+  //   } catch (err) {
+  //     res.status(500).json(err);
+  //   }
+  // },
 };
 
 module.exports = productController;

@@ -9,7 +9,6 @@ const authRoute = require("./routes/auth");
 const productRoute = require("./routes/product");
 const cartRoute = require("./routes/cart");
 const orderRoute = require("./routes/order");
-const paginationRoute = require("./routes/pagination");
 const searchRoute = require("./routes/search");
 const commentRoute = require("./routes/comment");
 // paypal
@@ -63,7 +62,6 @@ app.use("/api/products", productRoute);
 app.use("/api/carts", cartRoute);
 app.use("/api/orders", orderRoute);
 app.use("/api/search", searchRoute);
-app.use("/api/products/pagination", paginationRoute);
 app.use("/api/comments", commentRoute);
 app.use("/api/discounts", discountRoute);
 // receive

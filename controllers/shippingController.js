@@ -1,6 +1,4 @@
-const User = require("../models/User");
 const axios = require("axios");
-const Product = require("../models/Product");
 const mongoose = require("mongoose");
 const Address = require("../models/Address");
 

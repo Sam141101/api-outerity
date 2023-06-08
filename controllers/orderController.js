@@ -6,49 +6,10 @@ const User = require("../models/User");
 const axios = require("axios");
 const Shipping = require("../models/Shipping");
 const Size = require("../models/Size");
+const Address = require("../models/Address");
 
 const orderController = {
   // Tạo đơn đặt hàng
-  createOrder: async (req, res) => {
-    try {
-      let products = [];
-      req.body.cart.forEach(function (element) {
-        let tp = {
-          product_id: element.product_id,
-          quantity: element.quantity,
-          price: element.price,
-          size: element.size,
-          checkEvaluate: false,
-        };
-        products.push(tp);
-      });
-
-      const newOrder = new Order({
-        userId: req.body.userId,
-        products: products,
-        method: req.body.inputs.method,
-        amount: req.body.totalPrice,
-      });
-
-      const updateUser = await User.updateOne(
-        { _id: req.body.userId },
-        {
-          $set: {
-            fullname: req.body.inputs.fullname,
-            // address: req.body.inputs.address,
-            phone: req.body.inputs.phone,
-          },
-        }
-      );
-
-      const savedOrder = await newOrder.save();
-      res.status(200).json(savedOrder);
-      // res.status(200).json("fff");
-    } catch (err) {
-      res.status(500).json(err);
-      console.log(err);
-    }
-  },
 
   //  Khách hàng huỷ đơn hàng
   userCanceledOrder: async (req, res) => {
@@ -262,6 +223,8 @@ const orderController = {
   // Admin xác nhận hàng đã được giao
   adminAcceptDelivery: async (req, res) => {
     try {
+      console.log("res.body", req.body, req.params, req.body.pick_shift[0].id);
+
       const findUser = await User.findOne({
         _id: mongoose.Types.ObjectId(req.params.id),
       }).lean();
@@ -317,13 +280,11 @@ const orderController = {
       // Tạo đơn đặt hàng trên giao hàng nhanh
       const findReceiver = await Address.findOne({
         user_id: mongoose.Types.ObjectId(req.params.id),
-      });
+      }).lean();
 
       const findShopAddress = await Address.findOne({
         user_id: mongoose.Types.ObjectId(process.env.ADMIN_ID),
-      })
-        // .select("district_id ward_id address")
-        .lean();
+      }).lean();
 
       const shopid = Number(process.env.SHOPID);
 
@@ -336,7 +297,7 @@ const orderController = {
         // "https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee", // sai
         "https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/create",
         {
-          payment_type_id: 2, // -
+          payment_type_id: 1, // -
           note: "Nhẹ nhàng, cẩn thận với hàng hoá", // -
           required_note: "CHOTHUHANG", // -
           return_phone: process.env.SDT.toString(), // -
@@ -362,7 +323,7 @@ const orderController = {
           width: 30, // -
 
           cod_failed_amount: 2000,
-          pick_station_id: findReceiver.findReceiver, // Mã bưu cục
+          pick_station_id: 1444, // Mã bưu cục
 
           deliver_station_id: null,
           insurance_value: Number(order.amount),
@@ -370,7 +331,7 @@ const orderController = {
           service_type_id: 0, // -
           coupon: null, // -
           // pick_shift: [req.body.pick_shift.id], // Dùng để truyền ca lấy hàng , Sử dụng API Lấy danh sách ca lấy
-          pick_shift: req.body.pick_shift, // Dùng để truyền ca lấy hàng , Sử dụng API Lấy danh sách ca lấy --
+          pick_shift: [req.body.pick_shift[0].id], // Dùng để truyền ca lấy hàng , Sử dụng API Lấy danh sách ca lấy --
           items: items,
 
           pickup_time: 1665272576,
@@ -383,6 +344,8 @@ const orderController = {
           },
         }
       );
+
+      console.log("getPriceServiceGHN", getPriceServiceGHN);
 
       res.status(200).json("Đơn hàng đã được chuyển đi...");
     } catch (err) {
