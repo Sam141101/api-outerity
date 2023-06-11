@@ -33,7 +33,6 @@ const OrderSchema = new mongoose.Schema(
     status: { type: String, default: "pending" },
     expireAt: { type: Date, default: undefined, index: { expires: "0s" } }, // thêm field expireAt
     cancelAt: { type: Date },
-    // shippingCost: { type: mongoose.Schema.Types.ObjectId, ref: "ShippingCost" },
   },
   { timestamps: true }
 );

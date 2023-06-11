@@ -1,4 +1,3 @@
-// const User = require("../models/User");
 const Product = require("../models/Product");
 const mongoose = require("mongoose");
 const Size = require("../models/Size");
@@ -26,11 +25,6 @@ const productController = {
           Date.now() + req.body.expireAt * 60 * 60 * 1000
         );
         discountAmount = req.body.discount;
-        // newDiscount = new Discount({
-        //   product_id: newProduct._id,
-        //   discount_amount: req.body.discount,
-        //   expireAt: expireTimeAt,
-        // });
       }
 
       newDiscount = new Discount({
@@ -109,43 +103,26 @@ const productController = {
       }
 
       if (req.body.discount) {
-        const findDiscountProduct = await DiscountProduct.findOne({
-          product_id: mongoose.Types.ObjectId(req.params.id),
-        });
-
-        let expireTimeAt;
-
-        if (findDiscountProduct) {
-          findDiscountProduct.discount_amount = req.body.discount;
-          if (req.body.expireAt) {
-            // req.body.expireAt số tiếng
-            if (req.body.expireAt === 0) {
-              expireTimeAt = null;
-            } else {
-              expireTimeAt = new Date(
-                Date.now() + req.body.expireAt * 60 * 60 * 1000
-              );
-            }
-            findDiscountProduct.expireAt = expireTimeAt;
-            await findDiscountProduct.save();
-          }
-        } else {
-          if (req.body.expireAt === 0) {
-            expireTimeAt = null;
-          } else {
-            expireTimeAt = new Date(
-              Date.now() + req.body.expireAt * 60 * 60 * 1000
-            );
-          }
-          const newDiscount = new DiscountProduct({
-            discount_amount: req.body.discount,
-            expireAt: expireTimeAt,
-          });
-
-          await newDiscount.save();
+        let expireTimeAt = null;
+        if (req.body.expireAt) {
+          expireTimeAt = new Date(
+            Date.now() + req.body.expireAt * 60 * 60 * 1000
+          );
         }
-      }
 
+        const findDiscountProduct = await DiscountProduct.findOneAndUpdate(
+          {
+            product_id: mongoose.Types.ObjectId(req.params.id),
+          },
+          {
+            $set: {
+              discount_amount: req.body.discount,
+              expireAt: expireTimeAt,
+            },
+          },
+          { upsert: true }
+        );
+      }
       const updateProduct = await Product.updateOne(
         { _id: req.params.id },
         {
@@ -158,8 +135,6 @@ const productController = {
         },
         { upsert: true }
       );
-
-      // await findProduct.save();
 
       res.status(200).json("Cập nhật thông tin sản phẩm thành công.");
     } catch (err) {
@@ -225,8 +200,6 @@ const productController = {
 
     try {
       let products;
-      let sizes;
-      let discountsProduct;
       let totalProduct;
 
       // trước đó
@@ -264,46 +237,17 @@ const productController = {
           },
         });
       }
-      console.log("totalProduct", totalProduct);
-
-      // thêm
-      // products = products.map((product) => {
-      //   if (product.discountProduct_id) {
-      //     const saleAmount =
-      //       (parseInt(product.price) *
-      //         product.discountProduct_id.discount_amount) /
-      //       100;
-      //     return {
-      //       ...product.toJSON(),
-      //       withSale: true,
-      //       saleAmount: saleAmount,
-      //     };
-      //   } else {
-      //     return {
-      //       ...product.toJSON(),
-      //       withSale: false,
-      //     };
-      //   }
-      // });
-
-      // // Sắp xếp theo giá tiền gốc tăng dần hoặc giảm dần, tính đến giá trị giảm giá
-      // products.sort((a, b) => {
-      //   const aPrice = a.withSale ? a.price - a.saleAmount : a.price;
-      //   const bPrice = b.withSale ? b.price - b.saleAmount : b.price;
-      //   return aPrice - bPrice;
-      // });
-
+      // console.log("totalProduct", totalProduct);
+      // console.log("products", products);
       const pagi = {
         page: page,
         totalRows: totalProduct,
         limit: pageSize,
       };
-
       const results = {
         resultProducts: products,
         pagi: pagi,
       };
-
       res.status(200).json(results);
     } catch (err) {
       res.status(500).json(err);
@@ -391,13 +335,10 @@ const productController = {
   },
 
   getSimilarProduct: async (req, res) => {
-    // console.log("có");
     const sort = {
       createdAt: -1,
     };
-
     let products;
-
     try {
       products = await Product.find({
         categories: {
@@ -409,9 +350,6 @@ const productController = {
         .populate("discountProduct_id", "discount_amount")
         .populate("sizes", "size inStock")
         .select("title price discountProduct_id sizes setImg grandeImg");
-
-      // console.log(products.length);
-
       res.status(200).json(products);
     } catch (err) {
       res.status(500).json(err);
@@ -548,35 +486,34 @@ const productController = {
   //   }
   // },
 
-  // addDiscount: async (req, res) => {
-  //   try {
-  //     console.log(req.params, req.body);
-  //     const product = await Product.findOne({
-  //       _id: mongoose.Types.ObjectId(req.params.id),
-  //     });
+  addDiscount: async (req, res) => {
+    try {
+      console.log(req.params, req.body);
+      const product = await Product.findOne({
+        _id: mongoose.Types.ObjectId(req.params.id),
+      });
 
-  //     const newDiscount = new DiscountProduct({
-  //       product_id: product._id,
-  //       discount_amount: req.body.discount,
-  //       expireAt: null,
-  //     });
+      const newDiscount = new DiscountProduct({
+        product_id: product._id,
+        discount_amount: req.body.discount,
+        expireAt: null,
+      });
 
-  //     await newDiscount.save();
+      await newDiscount.save();
 
-  //     const findProduct = await Product.updateOne(
-  //       { _id: mongoose.Types.ObjectId(req.params.id) },
-  //       { $set: { discountProduct_id: newDiscount._id } },
-  //       { new: true }
-  //     );
+      const findProduct = await Product.updateOne(
+        { _id: mongoose.Types.ObjectId(req.params.id) },
+        { $set: { discountProduct_id: newDiscount._id } },
+        { new: true }
+      );
 
-  //     res
-  //       .status(200)
-  //       .json({ newDiscount: newDiscount, findProduct: findProduct });
-  //     // .json(product);
-  //   } catch (err) {
-  //     res.status(500).json(err);
-  //   }
-  // },
+      res
+        .status(200)
+        .json({ newDiscount: newDiscount, findProduct: findProduct });
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  },
 };
 
 module.exports = productController;

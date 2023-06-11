@@ -182,9 +182,6 @@ const discountController = {
   // Admin tạo mã giảm giá cho tất cả người dùng có thể sử dụng
   createPeopleUse: async (req, res) => {
     try {
-      // const coupon_code = crypto.randomBytes(5).toString("hex");
-
-      // req.body.expireAt số tiếng
       let expireTimeAt;
       if (req.body.expireAt === null) {
         expireTimeAt = null;
@@ -223,6 +220,7 @@ const discountController = {
   // Admin tạo mã giảm giá cho riêng 1 cá nhân
   createPersonUse: async (req, res) => {
     try {
+      console.log("req", req.params, req.body);
       const usedId = req.params.id;
       // const coupon_code = crypto.randomBytes(5).toString("hex");
 
@@ -237,7 +235,7 @@ const discountController = {
       }
 
       const discountCode = new DiscountCode({
-        coupon_code: coupon_code,
+        coupon_code: req.body.coupon_code,
         discount_type: req.body.discount_type,
         discount_amount: req.body.discount_amount,
         expiration_date: expireTimeAt,

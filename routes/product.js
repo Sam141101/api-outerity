@@ -47,7 +47,7 @@ router.get("/similar/", productController.getSimilarProduct);
 // test model size
 // router.post("/create-size/", productController.createSize);
 // router.post("/add-size/:id", productController.addSize);
-// router.get("/add-discount/:id", productController.addDiscount);
+router.get("/mm/:id", productController.addDiscount);
 // router.get("/size/:id", productController.createSize);
 // router.get("/add-size/:id", productController.addSize);
 

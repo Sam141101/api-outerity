@@ -1,7 +1,6 @@
+const router = require("express").Router();
 const middlewareController = require("../controllers/middlewareController");
 const orderController = require("../controllers/orderController");
-
-const router = require("express").Router();
 
 // Khách hàng huỷ đơn hàng
 router.put(

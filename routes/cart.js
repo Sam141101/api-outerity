@@ -1,7 +1,6 @@
+const router = require("express").Router();
 const cartController = require("../controllers/cartController");
 const middlewareController = require("../controllers/middlewareController");
-
-const router = require("express").Router();
 
 //CREATE
 router.post(

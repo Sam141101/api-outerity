@@ -22,8 +22,6 @@ const shippingRoute = require("./routes/shipping");
 
 const addressRoute = require("./routes/address");
 
-const cookieParser = require("cookie-parser");
-
 dotenv.config();
 
 paypal.configure({
@@ -40,7 +38,6 @@ mongoose
   });
 
 const corsOptions = {
-  // origin: "http://localhost:3000",
   origin: [
     "http://localhost:3000",
     process.env.PRODUCTION,
@@ -54,7 +51,6 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-app.use(cookieParser());
 // app.use(cors());
 app.use(express.json());
 app.use("/api/auth", authRoute);

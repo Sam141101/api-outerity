@@ -1,7 +1,6 @@
+const router = require("express").Router();
 const middlewareController = require("../controllers/middlewareController");
 const discountController = require("../controllers/discountController");
-
-const router = require("express").Router();
 
 // User ----------------------------------------------------
 

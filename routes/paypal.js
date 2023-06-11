@@ -1,7 +1,6 @@
+const router = require("express").Router();
 const middlewareController = require("../controllers/middlewareController");
 const paypalController = require("../controllers/paypalController");
-
-const router = require("express").Router();
 
 router.post("/pay", middlewareController.verifyToken, paypalController.payment);
 

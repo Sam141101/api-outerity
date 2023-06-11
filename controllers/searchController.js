@@ -170,9 +170,10 @@ const searchController = {
       })
         .skip(quanti)
         .limit(pageSize)
+
         .populate("discountProduct_id", "discount_amount")
         .populate("sizes", "size inStock")
-        .select("title img price discountProduct_id sizes");
+        .select("title grandeImg setImg price discountProduct_id sizes");
 
       let totalProduct = await Product.countDocuments({
         $or: [
@@ -182,7 +183,6 @@ const searchController = {
         ],
       });
 
-      // console.log("products", products);
       const pagi = {
         page: page,
         totalRows: totalProduct,

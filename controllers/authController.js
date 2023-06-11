@@ -4,7 +4,6 @@ const Token = require("../models/Token");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const mongoose = require("mongoose");
-
 const Cart = require("../models/Cart");
 const sendEmail = require("../utils/sendEmail");
 const crypto = require("crypto");
@@ -169,23 +168,6 @@ const authController = {
   //   Người dùng tạo mật khẩu mới
   newPassword: async (req, res) => {
     try {
-      // const user = await User.findOne({ _id: req.body.id });
-      // if (!user) return res.status(400).send({ message: "User not exists" });
-
-      // const salt = bcrypt.genSaltSync(10);
-      // // const encryptedPassword = await bcrypt.hash(password, salt);
-      // const hash = bcrypt.hashSync(req.body.password, salt);
-      // await User.updateOne(
-      //   {
-      //     _id: user._id,
-      //   },
-      //   {
-      //     $set: {
-      //       password: hash,
-      //     },
-      //   }
-      // );
-
       const updatedUser = await User.findOneAndUpdate(
         {
           _id: req.body.id,
@@ -206,7 +188,6 @@ const authController = {
       }
 
       res.status(200).send({ message: "Password updated successfully" });
-
       // res.status(200).send({ message: "Update success" });
     } catch (error) {
       res.status(500).send({ message: "Fail" });
@@ -286,8 +267,6 @@ const authController = {
 
   // //  tải lại token ( REFRESH )
   refreshToken: async (req, res) => {
-    // const refreshToken = req.cookies.refreshToken;
-
     // console.log(req.params.id);
     const findRefreshTokenData = await RefreshToken.findOne({
       userId: mongoose.Types.ObjectId(req.params.id),
@@ -325,7 +304,7 @@ const authController = {
           new: true,
         }
       );
-
+      console.log("đổi token");
       res.status(200).json({ token: newAccessToken1 });
     });
   },

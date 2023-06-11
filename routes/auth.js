@@ -1,12 +1,8 @@
 const router = require("express").Router();
-
 const authController = require("../controllers/authController");
 const middlewareController = require("../controllers/middlewareController");
 
 // Dùng phương thức token authentication
-
-// Áp dụng cái mô hình MVC
-
 // ---------------------- Xác thực gmail để đăng kí ----------------
 router.post("/confirm/register", authController.confirmRegisterUser);
 

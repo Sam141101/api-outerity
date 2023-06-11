@@ -7,9 +7,7 @@ const DisCountCodeSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-
     descCoupon: { type: String, required: true },
-
     discount_type: {
       type: String,
       enum: ["percentage", "amount"],
@@ -24,7 +22,6 @@ const DisCountCodeSchema = new mongoose.Schema(
       default: undefined,
       index: { expires: "0s" },
     }, // thêm field expireAt
-
     minimum_purchase_amount: {
       type: Number,
       required: true,
@@ -53,11 +50,6 @@ const DisCountCodeSchema = new mongoose.Schema(
         trim: true,
       },
     ],
-
-    // is_single_use: {
-    //   type: Boolean,
-    //   required: true,
-    // },
     is_single_use: {
       type: String,
       enum: ["single_use", "multi_use"],
