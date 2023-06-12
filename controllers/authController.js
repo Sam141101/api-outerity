@@ -43,6 +43,7 @@ const authController = {
 
       const newUser = new User({
         email: req.body.email,
+        username: "user-" + new Date().getTime(),
       });
 
       console.log(">>> newUser", newUser);
@@ -58,7 +59,7 @@ const authController = {
 
       await sendEmail(savedUser.email, "Verify Email", url);
 
-      res.status(201).send({
+      res.status(201).json({
         message: "Một Email gửi đến tài khoản của bạn xin vui lòng xác minh",
       });
     } catch (err) {
@@ -94,6 +95,43 @@ const authController = {
   },
 
   //   Đăng kí
+  // register: async (req, res) => {
+  //   try {
+  //     // khi xác thực thành công
+  //     const userCart = new Cart({});
+  //     const savedUserCart = await userCart.save();
+
+  //     const salt = bcrypt.genSaltSync(10);
+  //     // const hash = bcrypt.hashSync(req.body.inputs.password, salt);
+  //     const hash = bcrypt.hashSync(req.body.password, salt);
+  //     const updateUser = await User.updateOne(
+  //       { _id: req.body.userid },
+  //       {
+  //         $set: {
+  //           // username: req.body.inputs.username,
+  //           username: req.body.username,
+  //           // fullname: req.body.inputs.fullname,
+  //           // fullname: req.body.inputs.gender,
+  //           fullname: req.body.fullname,
+  //           gender: req.body.gender,
+  //           verified: true,
+  //           password: hash,
+  //           cart_id: userCart._id,
+  //           img: "https://static2.yan.vn/YanNews/2167221/202102/facebook-cap-nhat-avatar-doi-voi-tai-khoan-khong-su-dung-anh-dai-dien-e4abd14d.jpg",
+  //         },
+  //       },
+  //       { new: true }
+  //     );
+
+  //     const finduser = await User.findOne({ _id: req.body.userid });
+  //     res.status(201).json(finduser);
+  //     // res.status(201).json("Đăng ký tài khoản thành công.");
+  //   } catch (err) {
+  //     console.log(err);
+  //     res.status(500).json(err);
+  //   }
+  // },
+
   register: async (req, res) => {
     try {
       // khi xác thực thành công
@@ -107,6 +145,8 @@ const authController = {
         {
           $set: {
             username: req.body.inputs.username,
+            fullname: req.body.inputs.fullname,
+            fullname: req.body.inputs.gender,
             password: hash,
             cart_id: userCart._id,
             img: "https://static2.yan.vn/YanNews/2167221/202102/facebook-cap-nhat-avatar-doi-voi-tai-khoan-khong-su-dung-anh-dai-dien-e4abd14d.jpg",
@@ -115,7 +155,6 @@ const authController = {
         { new: true }
       );
 
-      // res.status(201).json(updateUser);
       res.status(201).json("Đăng ký tài khoản thành công.");
     } catch (err) {
       console.log(err);
@@ -232,7 +271,7 @@ const authController = {
   login: async (req, res) => {
     try {
       const user = await User.findOne({ username: req.body.username });
-      console.log("user---", user);
+      // console.log("user---", user);
       if (!user) return res.status(404).json("Không tìm thấy người dùng!");
 
       const isPasswordCorrect = await bcrypt.compare(

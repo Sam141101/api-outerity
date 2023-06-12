@@ -1,12 +1,18 @@
-const router = require("express").Router();
 const middlewareController = require("../controllers/middlewareController");
 const orderController = require("../controllers/orderController");
+const router = require("express").Router();
 
 // Khách hàng huỷ đơn hàng
 router.put(
   "/order-cancel/:id",
   middlewareController.verifyTokenAndAuthorization,
   orderController.userCanceledOrder
+);
+
+router.get(
+  "/:id/:orderId",
+  middlewareController.verifyTokenAndAuthorization,
+  orderController.getOneOrderUser
 );
 
 // Khách hàng xác nhận đã nhận được hàng
@@ -35,7 +41,7 @@ router.get(
 // Admin lấy ra 1 cái order thông qua _id của Order
 router.get(
   "/find/:id",
-  middlewareController.verifyTokenAndAdmin,
+  middlewareController.verifyTokenAndAuthorization,
   orderController.getOneOrderId
 );
 
@@ -89,6 +95,12 @@ router.get(
   orderController.monthlyIncome
 );
 
+router.get(
+  "/income-year",
+  middlewareController.verifyTokenAndAdmin,
+  orderController.monthlyofYear
+);
+
 // Get all
 router.get(
   "/",
@@ -98,8 +110,9 @@ router.get(
 
 // Get all amount status order user
 router.get(
-  "/amount-order-status/:id",
-  // middlewareController.verifyTokenAndAdmin,
+  // "/user-amount-order-status/:id",
+  "/user-amount-order-status",
+  // middlewareController.verifyTokenAndAuthorization,
   orderController.getAllOrderAmountStatus
 );
 

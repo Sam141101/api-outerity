@@ -5,6 +5,7 @@ const addressController = {
   // Tạo 1 địa chỉ
   createAddress: async (req, res) => {
     try {
+      console.log("ccccc");
       const addAddress = new Address({
         user_id: req.params.id,
         province: req.body.provinceName,
@@ -17,7 +18,9 @@ const addressController = {
       });
 
       await addAddress.save();
+
       res.status(200).json({ message: "Thêm thành công địa chỉ!" });
+      // res.status(200).json(addAddress);
     } catch (error) {
       res.status(500).json({ message: "Thêm không thành công" });
       console.error(error);

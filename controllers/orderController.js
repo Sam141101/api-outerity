@@ -9,7 +9,36 @@ const Size = require("../models/Size");
 const Address = require("../models/Address");
 
 const orderController = {
-  // Tạo đơn đặt hàng
+  // Chi tiết đơn hàng
+
+  getOneOrderUser: async (req, res) => {
+    try {
+      console.log("fff", req.params);
+      const orderList = await Order.findOne({
+        _id: mongoose.Types.ObjectId(req.params.orderId),
+      }).populate({
+        path: "products",
+        populate: { path: "product_id" },
+      });
+
+      // const orderList = await Order.findOne({
+      //   _id: req.params.orderId,
+      // }).populate({
+      //   path: "products",
+      //   populate: { path: "product_id" },
+      // });
+
+      // .select("_id userId products amount method status");
+      console.log("fafafasf", orderList);
+      res.status(200).json({
+        orderList: orderList,
+        // address: findUserAddress,
+      });
+    } catch (err) {
+      console.log(err);
+      res.status(500).json(err);
+    }
+  },
 
   //  Khách hàng huỷ đơn hàng
   userCanceledOrder: async (req, res) => {
@@ -44,7 +73,7 @@ const orderController = {
           order.cancelAt = null;
           order.status = "cancel";
           await order.save();
-          user.canceledOrder = user.canceledOrder - 1;
+          user.canceledOrder = user.canceledOrder + 1;
           await user.save();
           res.status(200).json("Huỷ bỏ đơn hàng thành công...");
         }
@@ -53,7 +82,7 @@ const orderController = {
         order.cancelAt = null;
         order.status = "cancel";
         await order.save();
-        user.canceledOrder = user.canceledOrder - 1;
+        user.canceledOrder = user.canceledOrder + 1;
         await user.save();
         res.status(200).json("Huỷ bỏ đơn hàng thành công...");
       }
@@ -182,6 +211,7 @@ const orderController = {
   // Admin lấy ra 1 cái order thông qua _id của Order
   getOneOrderId: async (req, res) => {
     try {
+      console.log("ffffff", req.params);
       const orderList = await Order.findOne({
         _id: req.params.id,
       })
@@ -416,50 +446,244 @@ const orderController = {
   },
 
   // GET MONTHLY INCOME
+
+  // monthlyIncome1: async (req, res) => {
+  //   const productId = req.query.pid;
+
+  //   // Tính toán thời gian cho tháng hiện tại bằng cách tạo ra ngày đầu tiên và ngày cuối cùng trong tháng
+  //   const currentDate = new Date();
+  //   const firstDayOfMonth = new Date(
+  //     currentDate.getFullYear(),
+  //     currentDate.getMonth(),
+  //     1
+  //   );
+  //   const lastDayOfMonth = new Date(
+  //     currentDate.getFullYear(),
+  //     currentDate.getMonth() + 1,
+  //     0,
+  //     23,
+  //     59,
+  //     59,
+  //     999
+  //   );
+
+  //   try {
+  //     // Tìm các đơn đặt hàng được tạo ra trong tháng hiện tại và có thể tìm kiếm theo productId (nếu có)
+  //     const orders = await Order.aggregate([
+  //       {
+  //         $match: {
+  //           createdAt: { $gte: firstDayOfMonth, $lte: lastDayOfMonth },
+  //           ...(productId && {
+  //             "products.product_id": mongoose.Types.ObjectId(productId),
+  //           }),
+  //         },
+  //       },
+  //       // Tính toán tổng doanh thu của từng tháng
+  //       {
+  //         $group: {
+  //           _id: { $month: "$createdAt" },
+  //           revenue: { $sum: "$amount" },
+  //         },
+  //       },
+  //       // Sắp xếp theo tháng tăng dần
+  //       {
+  //         $sort: { _id: 1 },
+  //       },
+  //     ]);
+  //     res.status(200).json(orders);
+  //   } catch (err) {
+  //     res.status(500).json(err);
+  //   }
+  // },
+
+  // doanh thu cho tháng hiện tại và tháng trước
+  // monthlyIncome: async (req, res) => {
+  //   const productId = req.query.pid;
+
+  //   let date = new Date();
+  //   let lastMonth = new Date(date.getFullYear(), date.getMonth(), 0);
+  //   let previousMonth = new Date(date.getFullYear(), date.getMonth() - 1, 1);
+
+  //   try {
+  //     const thisMonthIncome = await Order.aggregate([
+  //       {
+  //         $match: {
+  //           createdAt: {
+  //             $gte: new Date(date.getFullYear(), date.getMonth(), 1),
+  //             $lte: new Date(
+  //               date.getFullYear(),
+  //               date.getMonth() + 1,
+  //               0,
+  //               23,
+  //               59,
+  //               59,
+  //               999
+  //             ),
+  //           },
+  //           ...(productId && {
+  //             products: {
+  //               $elemMatch: { product_id: mongoose.Types.ObjectId(productId) },
+  //             },
+  //           }),
+  //         },
+  //       },
+  //       {
+  //         $group: {
+  //           _id: null,
+  //           total: { $sum: "$amount" },
+  //         },
+  //       },
+  //     ]);
+
+  //     const lastMonthIncome = await Order.aggregate([
+  //       {
+  //         $match: {
+  //           createdAt: {
+  //             $gte: new Date(date.getFullYear(), date.getMonth() - 1, 1),
+  //             $lte: new Date(
+  //               date.getFullYear(),
+  //               date.getMonth(),
+  //               0,
+  //               23,
+  //               59,
+  //               59,
+  //               999
+  //             ),
+  //           },
+  //           ...(productId && {
+  //             products: {
+  //               $elemMatch: { product_id: mongoose.Types.ObjectId(productId) },
+  //             },
+  //           }),
+  //         },
+  //       },
+  //       {
+  //         $group: {
+  //           _id: null,
+  //           total: { $sum: "$amount" },
+  //         },
+  //       },
+  //     ]);
+
+  //     const incomeData = {
+  //       this_month: thisMonthIncome[0]?.total ?? 0,
+  //       last_month: lastMonthIncome[0]?.total ?? 0,
+  //     };
+
+  //     res.status(200).json(incomeData);
+  //   } catch (err) {
+  //     res.status(500).json(err);
+  //   }
+  // },
+
+  // doanh thu cho tháng hiện tại, tháng trước và cả năm
   monthlyIncome: async (req, res) => {
     const productId = req.query.pid;
+
     let date = new Date();
-    let lastMonth = new Date(date.setMonth(date.getMonth() - 1));
-    let previousMonth = new Date(new Date().setMonth(lastMonth.getMonth() - 1));
-    // console.log('date >>> ', date);
-    // console.log('lastMonth >>> ', lastMonth);
-    // console.log('previousMonth >>> ', previousMonth);
-    // console.log('test>>> ', new Date());
+    let lastMonth = new Date(date.getFullYear(), date.getMonth(), 0);
+    let previousMonth = new Date(date.getFullYear(), date.getMonth() - 1, 1);
+
     try {
-      // const income = await Order.aggregate([
-      //   {
-      //     $match: {
-      //       createdAt: { $gte: lastMonth },
-      //     }
-      //   }
-      // ])
-      const income = await Order.aggregate([
+      const thisMonthIncome = await Order.aggregate([
         {
           $match: {
-            createdAt: { $gte: lastMonth },
+            createdAt: {
+              $gte: new Date(date.getFullYear(), date.getMonth(), 1),
+              $lte: new Date(
+                date.getFullYear(),
+                date.getMonth() + 1,
+                0,
+                23,
+                59,
+                59,
+                999
+              ),
+            },
             ...(productId && {
-              products: { $elemMatch: { productId } },
+              products: {
+                $elemMatch: { product_id: mongoose.Types.ObjectId(productId) },
+              },
             }),
           },
         },
         {
+          $group: {
+            _id: { $month: "$createdAt" },
+            total: { $sum: "$amount" },
+          },
+        },
+        {
           $project: {
-            month: { $month: "$createdAt" },
-            sales: "$amount",
+            month: "$_id",
+            total: 1,
+            _id: 0,
+          },
+        },
+        {
+          $sort: { month: 1 },
+        },
+      ]);
+
+      const lastMonthIncome = await Order.aggregate([
+        {
+          $match: {
+            createdAt: {
+              $gte: new Date(date.getFullYear(), date.getMonth() - 1, 1),
+              $lte: new Date(
+                date.getFullYear(),
+                date.getMonth(),
+                0,
+                23,
+                59,
+                59,
+                999
+              ),
+            },
+            ...(productId && {
+              products: {
+                $elemMatch: { product_id: mongoose.Types.ObjectId(productId) },
+              },
+            }),
           },
         },
         {
           $group: {
-            _id: "$month",
-            total: { $sum: "$sales" },
+            _id: null,
+            total: { $sum: "$amount" },
+          },
+        },
+      ]);
+
+      const thisYearIncome = await Order.aggregate([
+        {
+          $match: {
+            createdAt: {
+              $gte: new Date(date.getFullYear(), 0, 1),
+              $lte: new Date(date.getFullYear(), 11, 31, 23, 59, 59, 999),
+            },
+            ...(productId && {
+              products: {
+                $elemMatch: { product_id: mongoose.Types.ObjectId(productId) },
+              },
+            }),
           },
         },
         {
-          $sort: { _id: 1 },
+          $group: {
+            _id: null,
+            total: { $sum: "$amount" },
+          },
         },
       ]);
-      // console.log(income)
-      res.status(200).json(income);
+
+      const incomeData = {
+        this_month: thisMonthIncome,
+        last_month: lastMonthIncome[0]?.total ?? 0,
+        this_year: thisYearIncome[0]?.total ?? 0,
+      };
+
+      res.status(200).json(incomeData);
     } catch (err) {
       res.status(500).json(err);
     }
@@ -468,15 +692,6 @@ const orderController = {
   // Get alll
   getAllOrder: async (req, res) => {
     try {
-      // const updatedOrder = await Order.findByIdAndUpdate(
-      //   req.params.id,
-      //   {
-      //     $set: req.body,
-      //   },
-      //   { new: true }
-      // );
-      // res.status(200).json(updatedOrder);
-
       const orders = await Order.find().sort({ createdAt: -1 }).limit(5).lean();
       res.status(200).json(orders);
     } catch (err) {
@@ -486,39 +701,66 @@ const orderController = {
 
   getAllOrderAmountStatus: async (req, res) => {
     try {
-      const pending = await Order.countDocuments({
-        userId: req.params.id,
-        status: "pending",
-      });
+      const result = await Order.aggregate([
+        {
+          $match: {
+            userId: req.query.userid,
+          },
+        },
+        {
+          $group: {
+            _id: "$status",
+            count: { $sum: 1 },
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            status: "$_id",
+            count: 1,
+          },
+        },
+      ]);
+      let number = {
+        pending: 0,
+        accept: 0,
+        delivery: 0,
+        complete: 0,
+        cancel: 0,
+      };
+      for (let i = 0; i < result.length; i++) {
+        if (result[i] && result[i].status) {
+          console.log(result[i].status);
+          if (result[i].status === "pending") {
+            number.pending = result[i].count;
+          } else if (result[i].status === "accept") {
+            number.accept = result[i].count;
+          } else if (result[i].status === "delivery") {
+            number.delivery = result[i].count;
+          } else if (result[i].status === "complete") {
+            number.complete = result[i].count;
+          } else if (result[i].status === "cancel") {
+            number.cancel = result[i].count;
+          }
+        }
+      }
 
-      const accept = await Order.countDocuments({
-        userId: req.params.id,
-        status: "accept",
-      });
-
-      const delivery = await Order.countDocuments({
-        userId: req.params.id,
-        status: "delivery",
-      });
-
-      const complete = await Order.countDocuments({
-        userId: req.params.id,
-        status: "complete",
-      });
-
-      const cancel = await Order.countDocuments({
-        userId: req.params.id,
-        status: "cancel",
-      });
+      const findUserAddress = await Address.findOne({
+        user_id: mongoose.Types.ObjectId(req.query.userid),
+      })
+        .select("province district ward address")
+        .lean();
 
       res.status(200).json({
-        pending: pending,
-        accept: accept,
-        delivery: delivery,
-        complete: complete,
-        cancel: cancel,
+        pending: number.pending,
+        accept: number.accept,
+        delivery: number.delivery,
+        complete: number.complete,
+        cancel: number.cancel,
+        address: findUserAddress,
       });
     } catch (err) {
+      console.error(err);
       res.status(500).json(err);
     }
   },
@@ -558,34 +800,89 @@ const orderController = {
   },
 
   //  Thống kê đơn hàng
+
+  // thống kê doanh thu cho các tháng hiện tại
   orderStats: async (req, res) => {
     const date = new Date();
-    const lastYear = new Date(date.setFullYear(date.getFullYear() - 1));
+    const thisYear = new Date(date.getFullYear(), 0, 1);
 
     try {
       const data = await Order.aggregate([
         {
           $match: {
-            createdAt: { $gte: lastYear },
+            createdAt: { $gte: thisYear },
             status: "complete",
           },
         },
         {
           $project: {
             month: { $month: "$createdAt" },
+            amount: 1,
           },
         },
         {
           $group: {
             _id: "$month",
-            total: { $sum: 1 },
+            total: { $sum: "$amount" },
           },
         },
+        {
+          $project: {
+            month: "$_id",
+            total: 1,
+            _id: 0,
+          },
+        },
+        {
+          $sort: { month: 1 },
+        },
       ]);
+
       res.status(200).json(data);
     } catch (err) {
       res.status(500).json(err);
     }
+  },
+
+  monthlyofYear: async (req, res) => {
+    const productId = req.query.pid;
+
+    const date = new Date();
+    const thisYear = date.getFullYear();
+
+    // Lấy đơn hàng theo năm hiện tại và có trạng thái hoàn thành
+    const orders = await Order.find({
+      createdAt: { $gte: new Date(`${thisYear}-01-01T00:00:00.000Z`) },
+      status: "complete",
+      ...(productId && {
+        products: {
+          $elemMatch: { product_id: mongoose.Types.ObjectId(productId) },
+        },
+      }),
+    });
+
+    const monthly = {};
+    orders.forEach((order) => {
+      const month = new Date(order.createdAt).getMonth();
+      const revenue = order.amount;
+      if (!monthly[month]) {
+        monthly[month] = {
+          total: revenue,
+          count: 1,
+        };
+      } else {
+        monthly[month].total += revenue;
+        monthly[month].count++;
+      }
+    });
+
+    const monthlyIncome = Object.keys(monthly).map((month) => ({
+      month: parseInt(month) + 1,
+      total: monthly[month].total,
+      count: monthly[month].count,
+    }));
+
+    res.status(200).json(monthlyIncome);
   },
 };
 
