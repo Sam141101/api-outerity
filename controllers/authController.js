@@ -8,10 +8,8 @@ const Cart = require("../models/Cart");
 const sendEmail = require("../utils/sendEmail");
 const crypto = require("crypto");
 const RefreshToken = require("../models/RefreshToken");
-// const Shipping = require("../models/Shipping");
 
 const generateAccessToken = (user) => {
-  // console.log("input", user);
   return jwt.sign(
     { id: user._id, isAdmin: user.isAdmin },
     process.env.JWT_SEC,

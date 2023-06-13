@@ -76,23 +76,6 @@ const addressController = {
       console.error(error);
     }
   },
-
-  // getUserAddress: async (req, res) => {
-  //   try {
-  //     const findUserAddress = await Address.findOne({
-  //       user_id: mongoose.Types.ObjectId("6415b8fda33951dbea4507c2"),
-  //     });
-  //     // .select(
-  //     //   "province district ward address province_id district_id ward_id"
-  //     // )
-  //     // .lean();
-  //     console.log("ffffâf", findUserAddress);
-  //     res.status(200).json(findUserAddress);
-  //   } catch (error) {
-  //     res.status(500).json({ message: "Không tìm thấy địa chỉ." });
-  //     console.error(error);
-  //   }
-  // },
 };
 
 module.exports = addressController;

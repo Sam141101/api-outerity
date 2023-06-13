@@ -190,9 +190,6 @@ const discountController = {
           Date.now() + req.body.expireAt * 60 * 60 * 1000
         );
       }
-      // const expireTimeAt = new Date(
-      //   Date.now() + req.body.expireAt * 60 * 60 * 1000
-      // );
 
       const discountCode = new DiscountCode({
         coupon_code: req.body.coupon_code,

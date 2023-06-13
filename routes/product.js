@@ -17,7 +17,7 @@ router.put(
   productController.updateProduct
 );
 
-router.put("/src/:id", productController.updateSrc);
+// router.put("/src/:id", productController.updateSrc);
 
 //DELETE
 router.delete(
@@ -29,7 +29,7 @@ router.delete(
 //GET PRODUCT
 router.get("/find/:id", productController.getOneProduct);
 
-router.get("/get/:id", productController.getOne);
+// router.get("/get/:id", productController.getOne);
 
 //GET ALL PRODUCTS
 router.get("/", productController.getAllProduct);
@@ -49,7 +49,7 @@ router.get("/similar/", productController.getSimilarProduct);
 // test model size
 // router.post("/create-size/", productController.createSize);
 // router.post("/add-size/:id", productController.addSize);
-router.get("/mm/:id", productController.addDiscount);
+// router.get("/mm/:id", productController.addDiscount);
 // router.get("/size/:id", productController.createSize);
 // router.get("/add-size/:id", productController.addSize);
 

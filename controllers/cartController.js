@@ -113,21 +113,15 @@ const cartController = {
         populate: { path: "discountProduct_id" },
       });
 
-      // console.log("getQuanti", getQuanti);
-
       let { quantity: currentQuanti } = getQuanti;
       const { product_id } = getQuanti;
       let { price: currentPrice } = getQuanti;
-
-      // console.log("{----}", currentQuanti, product_id, currentPrice);
 
       let price =
         product_id.discountProduct_id.discount_amount > 0
           ? product_id.price *
             (1 - Number(product_id.discountProduct_id.discount_amount) / 100)
           : product_id.price;
-
-      // console.log("price", price);
 
       req.body.condition == "add" ? (currentQuanti += 1) : (currentQuanti -= 1);
       currentPrice = price * currentQuanti;

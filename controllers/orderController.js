@@ -655,35 +655,64 @@ const orderController = {
 
   getAmount: async (req, res) => {
     try {
-      console.log("req*****", req.params);
-      const pending = await Order.find({
-        userId: req.params.id,
-        status: "pending",
-      }).lean();
+      // console.log("req*****", req.params);
+      // const pending = await Order.find({
+      //   userId: req.params.id,
+      //   status: "pending",
+      // }).lean();
 
-      const accept = await Order.find({
-        userId: req.params.id,
+      // const accept = await Order.find({
+      //   userId: req.params.id,
 
-        status: "accept",
-      }).lean();
+      //   status: "accept",
+      // }).lean();
 
-      const delivery = await Order.find({
-        userId: req.params.id,
+      // const delivery = await Order.find({
+      //   userId: req.params.id,
 
-        status: "delivery",
-      }).lean();
+      //   status: "delivery",
+      // }).lean();
 
-      const complete = await Order.find({
-        userId: req.params.id,
+      // const complete = await Order.find({
+      //   userId: req.params.id,
 
-        status: "complete",
-      }).lean();
+      //   status: "complete",
+      // }).lean();
 
-      const cancel = await Order.find({
-        userId: req.params.id,
+      // const cancel = await Order.find({
+      //   userId: req.params.id,
 
-        status: "cancel",
-      }).lean();
+      //   status: "cancel",
+      // }).lean();
+
+      const result = await Order.aggregate([
+        { $match: { userId: req.query.userid } },
+        { $group: { _id: "$status", count: { $sum: 1 } } },
+        { $project: { _id: 0, status: "$_id", count: 1 } },
+      ]).exec();
+      let number = {
+        pending: 0,
+        accept: 0,
+        delivery: 0,
+        complete: 0,
+        cancel: 0,
+      };
+      for (let i = 0; i < result.length; i++) {
+        if (result[i] && result[i].status) {
+          console.log(result[i].status);
+          if (result[i].status === "pending") {
+            number.pending = result[i].count;
+          } else if (result[i].status === "accept") {
+            number.accept = result[i].count;
+          } else if (result[i].status === "delivery") {
+            number.delivery = result[i].count;
+          } else if (result[i].status === "complete") {
+            number.complete = result[i].count;
+          } else if (result[i].status === "cancel") {
+            number.cancel = result[i].count;
+          }
+        }
+      }
 
       const findUserAddress = await Address.findOne({
         user_id: mongoose.Types.ObjectId(req.params.id),
@@ -693,23 +722,23 @@ const orderController = {
         )
         .lean();
 
-      // res.status(200).json({
-      //   pending: number.pending,
-      //   accept: number.accept,
-      //   delivery: number.delivery,
-      //   complete: number.complete,
-      //   cancel: number.cancel,
-      //   address: findUserAddress,
-      // });
-
       res.status(200).json({
-        pending: pending.length,
-        accept: accept.length,
-        delivery: delivery.length,
-        complete: complete.length,
-        cancel: cancel.length,
+        pending: number.pending,
+        accept: number.accept,
+        delivery: number.delivery,
+        complete: number.complete,
+        cancel: number.cancel,
         address: findUserAddress,
       });
+
+      // res.status(200).json({
+      //   pending: pending.length,
+      //   accept: accept.length,
+      //   delivery: delivery.length,
+      //   complete: complete.length,
+      //   cancel: cancel.length,
+      //   address: findUserAddress,
+      // });
     } catch (err) {
       console.error(err);
       res.status(500).json(err);

@@ -2,8 +2,8 @@ const Product = require("../models/Product");
 const mongoose = require("mongoose");
 const Size = require("../models/Size");
 const DiscountProduct = require("../models/DiscountProduct");
-const Order = require("../models/Order");
-const Address = require("../models/Address");
+// const Order = require("../models/Order");
+// const Address = require("../models/Address");
 
 const productController = {
   // Tạo sản phẩm
@@ -171,74 +171,74 @@ const productController = {
     }
   },
 
-  getOne: async (req, res) => {
-    try {
-      console.log("req*****", req.params);
-      const pending = await Order.find({
-        userId: req.params.id,
-        // userId: "63b4e6bff1828a3d371fa0ef",
-        status: "pending",
-      }).lean();
+  // getOne: async (req, res) => {
+  //   try {
+  //     console.log("req*****", req.params);
+  //     const pending = await Order.find({
+  //       userId: req.params.id,
+  //       // userId: "63b4e6bff1828a3d371fa0ef",
+  //       status: "pending",
+  //     }).lean();
 
-      const accept = await Order.find({
-        userId: req.params.id,
-        // userId: "63b4e6bff1828a3d371fa0ef",
+  //     const accept = await Order.find({
+  //       userId: req.params.id,
+  //       // userId: "63b4e6bff1828a3d371fa0ef",
 
-        status: "accept",
-      }).lean();
+  //       status: "accept",
+  //     }).lean();
 
-      const delivery = await Order.find({
-        userId: req.params.id,
-        // userId: "63b4e6bff1828a3d371fa0ef",
+  //     const delivery = await Order.find({
+  //       userId: req.params.id,
+  //       // userId: "63b4e6bff1828a3d371fa0ef",
 
-        status: "delivery",
-      }).lean();
+  //       status: "delivery",
+  //     }).lean();
 
-      const complete = await Order.find({
-        userId: req.params.id,
-        // userId: "63b4e6bff1828a3d371fa0ef",
+  //     const complete = await Order.find({
+  //       userId: req.params.id,
+  //       // userId: "63b4e6bff1828a3d371fa0ef",
 
-        status: "complete",
-      }).lean();
+  //       status: "complete",
+  //     }).lean();
 
-      const cancel = await Order.find({
-        userId: req.params.id,
-        // userId: "63b4e6bff1828a3d371fa0ef",
+  //     const cancel = await Order.find({
+  //       userId: req.params.id,
+  //       // userId: "63b4e6bff1828a3d371fa0ef",
 
-        status: "cancel",
-      }).lean();
+  //       status: "cancel",
+  //     }).lean();
 
-      const findUserAddress = await Address.findOne({
-        user_id: mongoose.Types.ObjectId(req.params.id),
-        // user_id: mongoose.Types.ObjectId("63b4e6bff1828a3d371fa0ef"),
-      })
-        .select(
-          "province district ward address province_id district_id ward_id"
-        )
-        .lean();
+  //     const findUserAddress = await Address.findOne({
+  //       user_id: mongoose.Types.ObjectId(req.params.id),
+  //       // user_id: mongoose.Types.ObjectId("63b4e6bff1828a3d371fa0ef"),
+  //     })
+  //       .select(
+  //         "province district ward address province_id district_id ward_id"
+  //       )
+  //       .lean();
 
-      // res.status(200).json({
-      //   pending: number.pending,
-      //   accept: number.accept,
-      //   delivery: number.delivery,
-      //   complete: number.complete,
-      //   cancel: number.cancel,
-      //   address: findUserAddress,
-      // });
+  //     // res.status(200).json({
+  //     //   pending: number.pending,
+  //     //   accept: number.accept,
+  //     //   delivery: number.delivery,
+  //     //   complete: number.complete,
+  //     //   cancel: number.cancel,
+  //     //   address: findUserAddress,
+  //     // });
 
-      res.status(200).json({
-        pending: pending.length,
-        accept: accept.length,
-        delivery: delivery.length,
-        complete: complete.length,
-        cancel: cancel.length,
-        address: findUserAddress,
-      });
-    } catch (err) {
-      console.error(err);
-      res.status(500).json(err);
-    }
-  },
+  //     res.status(200).json({
+  //       pending: pending.length,
+  //       accept: accept.length,
+  //       delivery: delivery.length,
+  //       complete: complete.length,
+  //       cancel: cancel.length,
+  //       address: findUserAddress,
+  //     });
+  //   } catch (err) {
+  //     console.error(err);
+  //     res.status(500).json(err);
+  //   }
+  // },
 
   //  Lấy ra tất cả sản phẩm
   getAllProduct: async (req, res) => {
@@ -426,23 +426,23 @@ const productController = {
     }
   },
 
-  updateSrc: async (req, res) => {
-    try {
-      const updateProduct = await Product.updateOne(
-        { _id: req.params.id },
-        {
-          grandeImg: req.body.img,
-        },
-        { upsert: true }
-      );
+  // updateSrc: async (req, res) => {
+  //   try {
+  //     const updateProduct = await Product.updateOne(
+  //       { _id: req.params.id },
+  //       {
+  //         grandeImg: req.body.img,
+  //       },
+  //       { upsert: true }
+  //     );
 
-      const product = await Product.findOne({ _id: req.params.id });
+  //     const product = await Product.findOne({ _id: req.params.id });
 
-      res.status(200).json(product);
-    } catch (err) {
-      res.status(500).json(err);
-    }
-  },
+  //     res.status(200).json(product);
+  //   } catch (err) {
+  //     res.status(500).json(err);
+  //   }
+  // },
 
   // test model size
   //  createSize: async (req, res) => {
@@ -556,34 +556,34 @@ const productController = {
   //   }
   // },
 
-  addDiscount: async (req, res) => {
-    try {
-      console.log(req.params, req.body);
-      const product = await Product.findOne({
-        _id: mongoose.Types.ObjectId(req.params.id),
-      });
+  // addDiscount: async (req, res) => {
+  //   try {
+  //     console.log(req.params, req.body);
+  //     const product = await Product.findOne({
+  //       _id: mongoose.Types.ObjectId(req.params.id),
+  //     });
 
-      const newDiscount = new DiscountProduct({
-        product_id: product._id,
-        discount_amount: req.body.discount,
-        expireAt: null,
-      });
+  //     const newDiscount = new DiscountProduct({
+  //       product_id: product._id,
+  //       discount_amount: req.body.discount,
+  //       expireAt: null,
+  //     });
 
-      await newDiscount.save();
+  //     await newDiscount.save();
 
-      const findProduct = await Product.updateOne(
-        { _id: mongoose.Types.ObjectId(req.params.id) },
-        { $set: { discountProduct_id: newDiscount._id } },
-        { new: true }
-      );
+  //     const findProduct = await Product.updateOne(
+  //       { _id: mongoose.Types.ObjectId(req.params.id) },
+  //       { $set: { discountProduct_id: newDiscount._id } },
+  //       { new: true }
+  //     );
 
-      res
-        .status(200)
-        .json({ newDiscount: newDiscount, findProduct: findProduct });
-    } catch (err) {
-      res.status(500).json(err);
-    }
-  },
+  //     res
+  //       .status(200)
+  //       .json({ newDiscount: newDiscount, findProduct: findProduct });
+  //   } catch (err) {
+  //     res.status(500).json(err);
+  //   }
+  // },
 };
 
 module.exports = productController;
