@@ -10,7 +10,6 @@ const Address = require("../models/Address");
 
 const orderController = {
   // Chi tiết đơn hàng
-
   getOneOrderUser: async (req, res) => {
     try {
       console.log("fff", req.params);
@@ -21,14 +20,6 @@ const orderController = {
         populate: { path: "product_id" },
       });
 
-      // const orderList = await Order.findOne({
-      //   _id: req.params.orderId,
-      // }).populate({
-      //   path: "products",
-      //   populate: { path: "product_id" },
-      // });
-
-      // .select("_id userId products amount method status");
       console.log("fafafasf", orderList);
       res.status(200).json({
         orderList: orderList,
@@ -447,135 +438,6 @@ const orderController = {
 
   // GET MONTHLY INCOME
 
-  // monthlyIncome1: async (req, res) => {
-  //   const productId = req.query.pid;
-
-  //   // Tính toán thời gian cho tháng hiện tại bằng cách tạo ra ngày đầu tiên và ngày cuối cùng trong tháng
-  //   const currentDate = new Date();
-  //   const firstDayOfMonth = new Date(
-  //     currentDate.getFullYear(),
-  //     currentDate.getMonth(),
-  //     1
-  //   );
-  //   const lastDayOfMonth = new Date(
-  //     currentDate.getFullYear(),
-  //     currentDate.getMonth() + 1,
-  //     0,
-  //     23,
-  //     59,
-  //     59,
-  //     999
-  //   );
-
-  //   try {
-  //     // Tìm các đơn đặt hàng được tạo ra trong tháng hiện tại và có thể tìm kiếm theo productId (nếu có)
-  //     const orders = await Order.aggregate([
-  //       {
-  //         $match: {
-  //           createdAt: { $gte: firstDayOfMonth, $lte: lastDayOfMonth },
-  //           ...(productId && {
-  //             "products.product_id": mongoose.Types.ObjectId(productId),
-  //           }),
-  //         },
-  //       },
-  //       // Tính toán tổng doanh thu của từng tháng
-  //       {
-  //         $group: {
-  //           _id: { $month: "$createdAt" },
-  //           revenue: { $sum: "$amount" },
-  //         },
-  //       },
-  //       // Sắp xếp theo tháng tăng dần
-  //       {
-  //         $sort: { _id: 1 },
-  //       },
-  //     ]);
-  //     res.status(200).json(orders);
-  //   } catch (err) {
-  //     res.status(500).json(err);
-  //   }
-  // },
-
-  // doanh thu cho tháng hiện tại và tháng trước
-  // monthlyIncome: async (req, res) => {
-  //   const productId = req.query.pid;
-
-  //   let date = new Date();
-  //   let lastMonth = new Date(date.getFullYear(), date.getMonth(), 0);
-  //   let previousMonth = new Date(date.getFullYear(), date.getMonth() - 1, 1);
-
-  //   try {
-  //     const thisMonthIncome = await Order.aggregate([
-  //       {
-  //         $match: {
-  //           createdAt: {
-  //             $gte: new Date(date.getFullYear(), date.getMonth(), 1),
-  //             $lte: new Date(
-  //               date.getFullYear(),
-  //               date.getMonth() + 1,
-  //               0,
-  //               23,
-  //               59,
-  //               59,
-  //               999
-  //             ),
-  //           },
-  //           ...(productId && {
-  //             products: {
-  //               $elemMatch: { product_id: mongoose.Types.ObjectId(productId) },
-  //             },
-  //           }),
-  //         },
-  //       },
-  //       {
-  //         $group: {
-  //           _id: null,
-  //           total: { $sum: "$amount" },
-  //         },
-  //       },
-  //     ]);
-
-  //     const lastMonthIncome = await Order.aggregate([
-  //       {
-  //         $match: {
-  //           createdAt: {
-  //             $gte: new Date(date.getFullYear(), date.getMonth() - 1, 1),
-  //             $lte: new Date(
-  //               date.getFullYear(),
-  //               date.getMonth(),
-  //               0,
-  //               23,
-  //               59,
-  //               59,
-  //               999
-  //             ),
-  //           },
-  //           ...(productId && {
-  //             products: {
-  //               $elemMatch: { product_id: mongoose.Types.ObjectId(productId) },
-  //             },
-  //           }),
-  //         },
-  //       },
-  //       {
-  //         $group: {
-  //           _id: null,
-  //           total: { $sum: "$amount" },
-  //         },
-  //       },
-  //     ]);
-
-  //     const incomeData = {
-  //       this_month: thisMonthIncome[0]?.total ?? 0,
-  //       last_month: lastMonthIncome[0]?.total ?? 0,
-  //     };
-
-  //     res.status(200).json(incomeData);
-  //   } catch (err) {
-  //     res.status(500).json(err);
-  //   }
-  // },
-
   // doanh thu cho tháng hiện tại, tháng trước và cả năm
   monthlyIncome: async (req, res) => {
     const productId = req.query.pid;
@@ -748,7 +610,9 @@ const orderController = {
       const findUserAddress = await Address.findOne({
         user_id: mongoose.Types.ObjectId(req.query.userid),
       })
-        .select("province district ward address")
+        .select(
+          "province district ward address province_id district_id ward_id"
+        )
         .lean();
 
       res.status(200).json({

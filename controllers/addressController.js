@@ -19,7 +19,9 @@ const addressController = {
 
       await addAddress.save();
 
-      res.status(200).json({ message: "Thêm thành công địa chỉ!" });
+      res
+        .status(200)
+        .json({ message: "Thêm thành công địa chỉ!", address: addAddress });
       // res.status(200).json(addAddress);
     } catch (error) {
       res.status(500).json({ message: "Thêm không thành công" });
@@ -30,7 +32,7 @@ const addressController = {
   // update 1 địa chỉ
   updateAddress: async (req, res) => {
     try {
-      const updateAddress = await Address.updateOne(
+      const updateAddress = await Address.findOneAndUpdate(
         {
           user_id: mongoose.Types.ObjectId(req.params.id),
         },
@@ -47,7 +49,11 @@ const addressController = {
         },
         { new: true }
       );
-      res.status(200).json({ message: "Cập nhật thành công địa chỉ!" });
+
+      res.status(200).json({
+        message: "Cập nhật thành công địa chỉ!",
+        address: updateAddress,
+      });
     } catch (error) {
       res.status(500).json({ message: "Cập nhật không thành công" });
       console.error(error);
@@ -64,13 +70,29 @@ const addressController = {
           "province district ward address province_id district_id ward_id"
         )
         .lean();
-
       res.status(200).json(findUserAddress);
     } catch (error) {
       res.status(500).json({ message: "Không tìm thấy địa chỉ." });
       console.error(error);
     }
   },
+
+  // getUserAddress: async (req, res) => {
+  //   try {
+  //     const findUserAddress = await Address.findOne({
+  //       user_id: mongoose.Types.ObjectId("6415b8fda33951dbea4507c2"),
+  //     });
+  //     // .select(
+  //     //   "province district ward address province_id district_id ward_id"
+  //     // )
+  //     // .lean();
+  //     console.log("ffffâf", findUserAddress);
+  //     res.status(200).json(findUserAddress);
+  //   } catch (error) {
+  //     res.status(500).json({ message: "Không tìm thấy địa chỉ." });
+  //     console.error(error);
+  //   }
+  // },
 };
 
 module.exports = addressController;
