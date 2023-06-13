@@ -9,10 +9,18 @@ router.put(
   orderController.userCanceledOrder
 );
 
+// router.get(
+//   "/:id/:orderId",
+//   middlewareController.verifyTokenAndAuthorization,
+//   orderController.getOneOrderUser
+// );
+
+// Lấy ra số lượng đơn hàng cho từng trạng thái
 router.get(
-  "/:id/:orderId",
-  middlewareController.verifyTokenAndAuthorization,
-  orderController.getOneOrderUser
+  // "/user-amount-order-status/:id",
+  "/user-amount-order-status",
+  // middlewareController.verifyTokenAndAuthorization,
+  orderController.getAllOrderAmountStatus
 );
 
 // Khách hàng xác nhận đã nhận được hàng
@@ -109,16 +117,10 @@ router.get(
 );
 
 // Get all amount status order user
-router.get(
-  // "/user-amount-order-status/:id",
-  "/user-amount-order-status",
-  // middlewareController.verifyTokenAndAuthorization,
-  orderController.getAllOrderAmountStatus
-);
 
 router.get(
   "/amount/:id",
-  middlewareController.verifyTokenAndAuthorization,
+  // middlewareController.verifyTokenAndAuthorization,
   orderController.getAmount
 );
 

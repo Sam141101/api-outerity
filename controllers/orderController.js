@@ -592,6 +592,7 @@ const orderController = {
       //   }
       // }
 
+      console.log("req.query", req.query);
       const pending = await Order.find({
         userId: req.query.userid,
         status: "pending",
@@ -654,6 +655,7 @@ const orderController = {
 
   getAmount: async (req, res) => {
     try {
+      console.log("req*****", req.params);
       const pending = await Order.find({
         userId: req.params.id,
         status: "pending",
