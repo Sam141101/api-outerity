@@ -16,12 +16,12 @@ router.put(
 // );
 
 // Lấy ra số lượng đơn hàng cho từng trạng thái
-router.get(
-  // "/user-amount-order-status/:id",
-  "/user-amount-order-status",
-  // middlewareController.verifyTokenAndAuthorization,
-  orderController.getAllOrderAmountStatus
-);
+// router.get(
+//   "/user-amount-order-status/:id/",
+//   // "/user-amount-order-status",
+//   // middlewareController.verifyTokenAndAuthorization,
+//   orderController.getAllOrderAmountStatus
+// );
 
 // Khách hàng xác nhận đã nhận được hàng
 router.put(
@@ -120,7 +120,7 @@ router.get(
 
 router.get(
   // "/amount/:id",
-  "/amount2222222/fffffffffff/ffffffffffffffff/fffff",
+  "/amount2222222/fffffffffff/ffffffffffffffff/fffff/:id",
   // middlewareController.verifyTokenAndAuthorization,
   orderController.getAmount
 );
@@ -128,6 +128,7 @@ router.get(
 // Admin get all amount status order
 router.get(
   "/amount-order-status/",
+  // "/amount-order-status/:id",
   // middlewareController.verifyTokenAndAdmin,
   orderController.getAdminAllOrderAmountStatus
 );

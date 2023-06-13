@@ -724,26 +724,42 @@ const orderController = {
 
   getAdminAllOrderAmountStatus: async (req, res) => {
     try {
+      console.log("ffffff123455");
       const pending = await Order.countDocuments({
+        // userId: "63b4e6bff1828a3d371fa0ef",
         status: "pending",
       });
 
       const accept = await Order.countDocuments({
+        // userId: "63b4e6bff1828a3d371fa0ef",
+
         status: "accept",
       });
 
       const delivery = await Order.countDocuments({
+        // userId: "63b4e6bff1828a3d371fa0ef",
+
         status: "delivery",
       });
 
       const complete = await Order.countDocuments({
+        // userId: "63b4e6bff1828a3d371fa0ef",
+
         status: "complete",
       });
 
       const cancel = await Order.countDocuments({
+        // userId: "63b4e6bff1828a3d371fa0ef",
+
         status: "cancel",
       });
-
+      console.log("lgo", {
+        pending: pending,
+        accept: accept,
+        delivery: delivery,
+        complete: complete,
+        cancel: cancel,
+      });
       res.status(200).json({
         pending: pending,
         accept: accept,
