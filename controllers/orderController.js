@@ -687,7 +687,6 @@ const orderController = {
 
       const findUserAddress = await Address.findOne({
         user_id: mongoose.Types.ObjectId(req.params.id),
-        // user_id: mongoose.Types.ObjectId("63b4e6bff1828a3d371fa0ef"),
       })
         .select(
           "province district ward address province_id district_id ward_id"
