@@ -164,8 +164,15 @@ const productController = {
           "title img categories color price discountProduct_id sizes grandeImg"
         );
 
+      const cancel = await Order.findOne({
+        // userId: req.params.id,
+        userId: "63b4e6bff1828a3d371fa0ef",
+
+        status: "cancel",
+      }).lean();
       console.timeEnd("myTimer");
       res.status(200).json(product);
+      res.status(200).json({ cancel: cancel, product: product });
     } catch (err) {
       res.status(500).json(err);
     }
@@ -173,7 +180,7 @@ const productController = {
 
   getOne: async (req, res) => {
     try {
-      const cancel = await Order.find({
+      const cancel = await Order.findOne({
         userId: req.params.id,
         // userId: "63b4e6bff1828a3d371fa0ef",
 
