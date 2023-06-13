@@ -686,7 +686,7 @@ const orderController = {
       // }).lean();
 
       const result = await Order.aggregate([
-        { $match: { userId: req.query.userid } },
+        { $match: { userId: req.params.id } },
         { $group: { _id: "$status", count: { $sum: 1 } } },
         { $project: { _id: 0, status: "$_id", count: 1 } },
       ]).exec();
