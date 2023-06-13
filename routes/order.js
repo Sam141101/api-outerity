@@ -116,6 +116,12 @@ router.get(
   orderController.getAllOrderAmountStatus
 );
 
+router.get(
+  "/amount/:id",
+  middlewareController.verifyTokenAndAuthorization,
+  orderController.getAmount
+);
+
 // Admin get all amount status order
 router.get(
   "/amount-order-status/",

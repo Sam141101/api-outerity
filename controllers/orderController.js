@@ -652,6 +652,68 @@ const orderController = {
     }
   },
 
+  getAmount: async (req, res) => {
+    try {
+      const pending = await Order.find({
+        userId: req.params.id,
+        status: "pending",
+      }).lean();
+
+      const accept = await Order.find({
+        userId: req.params.id,
+
+        status: "accept",
+      }).lean();
+
+      const delivery = await Order.find({
+        userId: req.params.id,
+
+        status: "delivery",
+      }).lean();
+
+      const complete = await Order.find({
+        userId: req.params.id,
+
+        status: "complete",
+      }).lean();
+
+      const cancel = await Order.find({
+        userId: req.params.id,
+
+        status: "cancel",
+      }).lean();
+
+      const findUserAddress = await Address.findOne({
+        user_id: mongoose.Types.ObjectId(req.params.id),
+      })
+        .select(
+          "province district ward address province_id district_id ward_id"
+        )
+        .lean();
+
+      // res.status(200).json({
+      //   pending: number.pending,
+      //   accept: number.accept,
+      //   delivery: number.delivery,
+      //   complete: number.complete,
+      //   cancel: number.cancel,
+      //   address: findUserAddress,
+      // });
+
+      res.status(200).json({
+        pending: pending.length,
+        accept: accept.length,
+        delivery: delivery.length,
+        complete: complete.length,
+        cancel: cancel.length,
+        address: findUserAddress,
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json(err);
+    }
+  },
+
   getAdminAllOrderAmountStatus: async (req, res) => {
     try {
       const pending = await Order.countDocuments({
