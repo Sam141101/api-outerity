@@ -171,7 +171,7 @@ const productController = {
         status: "cancel",
       }).lean();
       console.timeEnd("myTimer");
-      res.status(200).json(product);
+      // res.status(200).json(product);
       res.status(200).json({ cancel: cancel, product: product });
     } catch (err) {
       res.status(500).json(err);
