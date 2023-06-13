@@ -563,34 +563,63 @@ const orderController = {
 
   getAllOrderAmountStatus: async (req, res) => {
     try {
-      const result = await Order.aggregate([
-        { $match: { userId: req.query.userid } },
-        { $group: { _id: "$status", count: { $sum: 1 } } },
-        { $project: { _id: 0, status: "$_id", count: 1 } },
-      ]).exec();
-      let number = {
-        pending: 0,
-        accept: 0,
-        delivery: 0,
-        complete: 0,
-        cancel: 0,
-      };
-      for (let i = 0; i < result.length; i++) {
-        if (result[i] && result[i].status) {
-          console.log(result[i].status);
-          if (result[i].status === "pending") {
-            number.pending = result[i].count;
-          } else if (result[i].status === "accept") {
-            number.accept = result[i].count;
-          } else if (result[i].status === "delivery") {
-            number.delivery = result[i].count;
-          } else if (result[i].status === "complete") {
-            number.complete = result[i].count;
-          } else if (result[i].status === "cancel") {
-            number.cancel = result[i].count;
-          }
-        }
-      }
+      // const result = await Order.aggregate([
+      //   { $match: { userId: req.query.userid } },
+      //   { $group: { _id: "$status", count: { $sum: 1 } } },
+      //   { $project: { _id: 0, status: "$_id", count: 1 } },
+      // ]).exec();
+      // let number = {
+      //   pending: 0,
+      //   accept: 0,
+      //   delivery: 0,
+      //   complete: 0,
+      //   cancel: 0,
+      // };
+      // for (let i = 0; i < result.length; i++) {
+      //   if (result[i] && result[i].status) {
+      //     console.log(result[i].status);
+      //     if (result[i].status === "pending") {
+      //       number.pending = result[i].count;
+      //     } else if (result[i].status === "accept") {
+      //       number.accept = result[i].count;
+      //     } else if (result[i].status === "delivery") {
+      //       number.delivery = result[i].count;
+      //     } else if (result[i].status === "complete") {
+      //       number.complete = result[i].count;
+      //     } else if (result[i].status === "cancel") {
+      //       number.cancel = result[i].count;
+      //     }
+      //   }
+      // }
+
+      const pending = await Order.countDocuments({
+        userId: req.query.userid,
+        status: "pending",
+      });
+
+      const accept = await Order.countDocuments({
+        userId: req.query.userid,
+
+        status: "accept",
+      });
+
+      const delivery = await Order.countDocuments({
+        userId: req.query.userid,
+
+        status: "delivery",
+      });
+
+      const complete = await Order.countDocuments({
+        userId: req.query.userid,
+
+        status: "complete",
+      });
+
+      const cancel = await Order.countDocuments({
+        userId: req.query.userid,
+
+        status: "cancel",
+      });
 
       const findUserAddress = await Address.findOne({
         user_id: mongoose.Types.ObjectId(req.query.userid),
@@ -600,12 +629,21 @@ const orderController = {
         )
         .lean();
 
+      // res.status(200).json({
+      //   pending: number.pending,
+      //   accept: number.accept,
+      //   delivery: number.delivery,
+      //   complete: number.complete,
+      //   cancel: number.cancel,
+      //   address: findUserAddress,
+      // });
+
       res.status(200).json({
-        pending: number.pending,
-        accept: number.accept,
-        delivery: number.delivery,
-        complete: number.complete,
-        cancel: number.cancel,
+        pending: pending,
+        accept: accept,
+        delivery: delivery,
+        complete: complete,
+        cancel: cancel,
         address: findUserAddress,
       });
     } catch (err) {
