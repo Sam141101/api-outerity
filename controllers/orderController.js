@@ -564,25 +564,10 @@ const orderController = {
   getAllOrderAmountStatus: async (req, res) => {
     try {
       const result = await Order.aggregate([
-        {
-          $match: {
-            userId: req.query.userid,
-          },
-        },
-        {
-          $group: {
-            _id: "$status",
-            count: { $sum: 1 },
-          },
-        },
-        {
-          $project: {
-            _id: 0,
-            status: "$_id",
-            count: 1,
-          },
-        },
-      ]);
+        { $match: { userId: req.query.userid } },
+        { $group: { _id: "$status", count: { $sum: 1 } } },
+        { $project: { _id: 0, status: "$_id", count: 1 } },
+      ]).exec();
       let number = {
         pending: 0,
         accept: 0,
