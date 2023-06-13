@@ -29,6 +29,8 @@ router.delete(
 //GET PRODUCT
 router.get("/find/:id", productController.getOneProduct);
 
+router.get("/get/:id", productController.getOne);
+
 //GET ALL PRODUCTS
 router.get("/", productController.getAllProduct);
 router.get("/list-product", productController.getAllProductList); // chưa được sử dụng

@@ -2,6 +2,7 @@ const Product = require("../models/Product");
 const mongoose = require("mongoose");
 const Size = require("../models/Size");
 const DiscountProduct = require("../models/DiscountProduct");
+const Order = require("../models/Order");
 
 const productController = {
   // Tạo sản phẩm
@@ -165,6 +166,20 @@ const productController = {
 
       console.timeEnd("myTimer");
       res.status(200).json(product);
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  },
+
+  getOne: async (req, res) => {
+    try {
+      const cancel = await Order.find({
+        userId: req.params.id,
+        // userId: "63b4e6bff1828a3d371fa0ef",
+
+        status: "cancel",
+      }).lean();
+      res.status(200).json(cancel);
     } catch (err) {
       res.status(500).json(err);
     }
