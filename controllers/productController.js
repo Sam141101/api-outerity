@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const Size = require("../models/Size");
 const DiscountProduct = require("../models/DiscountProduct");
 const Order = require("../models/Order");
+const Address = require("../models/Address");
 
 const productController = {
   // Tạo sản phẩm
@@ -163,16 +164,8 @@ const productController = {
         .select(
           "title img categories color price discountProduct_id sizes grandeImg"
         );
-
-      const cancel = await Order.findOne({
-        // userId: req.params.id,
-        userId: "63b4e6bff1828a3d371fa0ef",
-
-        status: "cancel",
-      }).lean();
       console.timeEnd("myTimer");
-      // res.status(200).json(product);
-      res.status(200).json({ cancel: cancel, product: product });
+      res.status(200).json(product);
     } catch (err) {
       res.status(500).json(err);
     }
@@ -180,14 +173,69 @@ const productController = {
 
   getOne: async (req, res) => {
     try {
-      const cancel = await Order.findOne({
+      console.log("req*****", req.params);
+      const pending = await Order.find({
+        userId: req.params.id,
+        // userId: "63b4e6bff1828a3d371fa0ef",
+        status: "pending",
+      }).lean();
+
+      const accept = await Order.find({
+        userId: req.params.id,
+        // userId: "63b4e6bff1828a3d371fa0ef",
+
+        status: "accept",
+      }).lean();
+
+      const delivery = await Order.find({
+        userId: req.params.id,
+        // userId: "63b4e6bff1828a3d371fa0ef",
+
+        status: "delivery",
+      }).lean();
+
+      const complete = await Order.find({
+        userId: req.params.id,
+        // userId: "63b4e6bff1828a3d371fa0ef",
+
+        status: "complete",
+      }).lean();
+
+      const cancel = await Order.find({
         userId: req.params.id,
         // userId: "63b4e6bff1828a3d371fa0ef",
 
         status: "cancel",
       }).lean();
-      res.status(200).json(cancel);
+
+      const findUserAddress = await Address.findOne({
+        user_id: mongoose.Types.ObjectId(req.params.id),
+        // user_id: mongoose.Types.ObjectId("63b4e6bff1828a3d371fa0ef"),
+      })
+        .select(
+          "province district ward address province_id district_id ward_id"
+        )
+        .lean();
+
+      // res.status(200).json({
+      //   pending: number.pending,
+      //   accept: number.accept,
+      //   delivery: number.delivery,
+      //   complete: number.complete,
+      //   cancel: number.cancel,
+      //   address: findUserAddress,
+      // });
+
+      res.status(200).json({
+        pending: pending.length,
+        accept: accept.length,
+        delivery: delivery.length,
+        complete: complete.length,
+        cancel: cancel.length,
+        address: findUserAddress,
+      });
     } catch (err) {
+      console.error(err);
       res.status(500).json(err);
     }
   },
