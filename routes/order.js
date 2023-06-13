@@ -119,7 +119,8 @@ router.get(
 // Get all amount status order user
 
 router.get(
-  "/amount/:id",
+  // "/amount/:id",
+  "/amount2222222/fffffffffff/ffffffffffffffff/fffff",
   // middlewareController.verifyTokenAndAuthorization,
   orderController.getAmount
 );

@@ -657,36 +657,42 @@ const orderController = {
     try {
       console.log("req*****", req.params);
       const pending = await Order.find({
-        userId: req.params.id,
+        // userId: req.params.id,
+        userId: "63b4e6bff1828a3d371fa0ef",
         status: "pending",
       }).lean();
 
       const accept = await Order.find({
-        userId: req.params.id,
+        // userId: req.params.id,
+        userId: "63b4e6bff1828a3d371fa0ef",
 
         status: "accept",
       }).lean();
 
       const delivery = await Order.find({
-        userId: req.params.id,
+        // userId: req.params.id,
+        userId: "63b4e6bff1828a3d371fa0ef",
 
         status: "delivery",
       }).lean();
 
       const complete = await Order.find({
-        userId: req.params.id,
+        // userId: req.params.id,
+        userId: "63b4e6bff1828a3d371fa0ef",
 
         status: "complete",
       }).lean();
 
       const cancel = await Order.find({
-        userId: req.params.id,
+        // userId: req.params.id,
+        userId: "63b4e6bff1828a3d371fa0ef",
 
         status: "cancel",
       }).lean();
 
       const findUserAddress = await Address.findOne({
-        user_id: mongoose.Types.ObjectId(req.params.id),
+        // user_id: mongoose.Types.ObjectId(req.params.id),
+        user_id: mongoose.Types.ObjectId("63b4e6bff1828a3d371fa0ef"),
       })
         .select(
           "province district ward address province_id district_id ward_id"
