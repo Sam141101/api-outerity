@@ -592,34 +592,34 @@ const orderController = {
       //   }
       // }
 
-      const pending = await Order.countDocuments({
+      const pending = await Order.find({
         userId: req.query.userid,
         status: "pending",
-      });
+      }).lean();
 
-      const accept = await Order.countDocuments({
+      const accept = await Order.find({
         userId: req.query.userid,
 
         status: "accept",
-      });
+      }).lean();
 
-      const delivery = await Order.countDocuments({
+      const delivery = await Order.find({
         userId: req.query.userid,
 
         status: "delivery",
-      });
+      }).lean();
 
-      const complete = await Order.countDocuments({
+      const complete = await Order.find({
         userId: req.query.userid,
 
         status: "complete",
-      });
+      }).lean();
 
-      const cancel = await Order.countDocuments({
+      const cancel = await Order.find({
         userId: req.query.userid,
 
         status: "cancel",
-      });
+      }).lean();
 
       const findUserAddress = await Address.findOne({
         user_id: mongoose.Types.ObjectId(req.query.userid),
@@ -639,11 +639,11 @@ const orderController = {
       // });
 
       res.status(200).json({
-        pending: pending,
-        accept: accept,
-        delivery: delivery,
-        complete: complete,
-        cancel: cancel,
+        pending: pending.length,
+        accept: accept.length,
+        delivery: delivery.length,
+        complete: complete.length,
+        cancel: cancel.length,
         address: findUserAddress,
       });
     } catch (err) {
