@@ -143,7 +143,7 @@ const authController = {
       const salt = bcrypt.genSaltSync(10);
       const hash = bcrypt.hashSync(req.body.inputs.password, salt);
       const updateUser = await User.updateOne(
-        { _id: req.body.userid },
+        { _id: req.body.inputs.userid },
         {
           $set: {
             username: req.body.inputs.username,
