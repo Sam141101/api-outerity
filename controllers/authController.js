@@ -69,20 +69,24 @@ const authController = {
   //   Xác nhận đường link gửi trong gmail ---> trang đăng kí
   verifyLink: async (req, res) => {
     try {
-      console.log(req.params);
+      console.log("req.params", req.params);
       const user = await User.findOne({ _id: req.params.id }).lean();
       if (!user)
         return res.status(400).send({ message: "Liên kết không hợp lệ" });
+      console.log("user", user);
 
       const token = await Token.findOne({
         userId: user._id,
         token: req.params.token,
-      }).lean();
+      });
+      console.log("token", token);
+
       if (!token)
         return res.status(400).send({ message: "Liên kết không hợp lệ" });
 
       await User.updateOne({ _id: user._id }, { verified: true });
       await token.remove();
+      // await Order.findOneAndRemove({ _id: orderId });
 
       // res.status(200).send({ message: "Email verified successfully" });
       res.status(200).json({ id: user._id });
