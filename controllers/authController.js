@@ -136,6 +136,7 @@ const authController = {
 
   register: async (req, res) => {
     try {
+      // console.log("req.body", req.body, req.body.inpus);
       // khi xác thực thành công
       const userCart = new Cart({});
       const savedUserCart = await userCart.save();
@@ -143,7 +144,7 @@ const authController = {
       const salt = bcrypt.genSaltSync(10);
       const hash = bcrypt.hashSync(req.body.inputs.password, salt);
       const updateUser = await User.updateOne(
-        { _id: req.body.inputs.userid },
+        { _id: req.body.userid },
         {
           $set: {
             username: req.body.inputs.username,
